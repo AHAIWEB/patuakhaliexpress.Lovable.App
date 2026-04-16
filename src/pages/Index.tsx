@@ -6,8 +6,8 @@ import BreakingTicker from "@/components/BreakingTicker";
 import CategorySection from "@/components/CategorySection";
 import PostCard, { PostCardData } from "@/components/PostCard";
 import SidebarWidget from "@/components/SidebarWidget";
-import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
 interface HomeSection {
   id: string;
@@ -118,6 +118,11 @@ const Index = () => {
     setLatestLoading(false);
   };
 
+  const sentinelRef = useInfiniteScroll(loadMore, {
+    hasMore: latestHasMore,
+    loading: latestLoading,
+  });
+
   const lead = featured[0] ?? latest[0];
   const sideFeatured = featured.slice(1, 5).length ? featured.slice(1, 5) : latest.slice(1, 5);
   const showFeaturedBlock = !!lead;
@@ -178,12 +183,9 @@ const Index = () => {
                     <PostCard key={p.id} post={p} />
                   ))}
                 </div>
-                {latestHasMore && (
-                  <div className="text-center mt-6">
-                    <Button onClick={loadMore} disabled={latestLoading} variant="outline">
-                      {latestLoading ? "লোড হচ্ছে..." : "আরও দেখুন"}
-                    </Button>
-                  </div>
+                <div ref={sentinelRef} className="h-10" />
+                {latestLoading && (
+                  <p className="text-center text-muted-foreground mt-4">লোড হচ্ছে...</p>
                 )}
               </section>
             )}
