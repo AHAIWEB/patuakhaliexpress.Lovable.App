@@ -84,7 +84,8 @@ export default function CategoriesTab() {
   };
 
   const toggle = async (id: string, field: "show_in_menu" | "hide_featured", v: boolean) => {
-    await supabase.from("categories").update({ [field]: v }).eq("id", id);
+    const patch = field === "show_in_menu" ? { show_in_menu: v } : { hide_featured: v };
+    await supabase.from("categories").update(patch).eq("id", id);
     load();
   };
 
