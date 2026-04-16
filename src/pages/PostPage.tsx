@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import { ExternalLink, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PhotocardModal from "@/components/PhotocardModal";
+import ShareButtons from "@/components/ShareButtons";
 
 interface Post {
   id: string;
@@ -112,7 +113,7 @@ const PostPage = () => {
             <span>{publishedAt}</span>
           </div>
 
-          <div className="mt-3">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <Button
               size="sm"
               variant="outline"
@@ -120,6 +121,7 @@ const PostPage = () => {
             >
               <ImageIcon className="h-4 w-4 mr-1" /> ফটোকার্ড বানান
             </Button>
+            <ShareButtons title={post.title} compact />
           </div>
 
           {post.image_url && (
@@ -142,6 +144,10 @@ const PostPage = () => {
               {displayContent}
             </div>
           )}
+
+          <div className="mt-6 pt-4 border-t border-border">
+            <ShareButtons title={post.title} />
+          </div>
 
           {isAggregated && post.source_url && (
             <div className="mt-6 p-4 border border-border bg-secondary/50">

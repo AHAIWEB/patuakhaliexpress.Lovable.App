@@ -5,6 +5,8 @@ import Footer from "@/components/Footer";
 import BreakingTicker from "@/components/BreakingTicker";
 import CategorySection from "@/components/CategorySection";
 import PostCard, { PostCardData } from "@/components/PostCard";
+import SidebarWidget from "@/components/SidebarWidget";
+import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
 interface HomeSection {
@@ -18,9 +20,16 @@ interface HomeSection {
   display_order: number;
 }
 
+const PAGE_SIZE = 9;
+const SELECT =
+  "id,title,slug,excerpt,image_url,published_at,category:categories(name,slug),source:sources(name,logo_url)";
+
 const Index = () => {
   const [featured, setFeatured] = useState<PostCardData[]>([]);
   const [latest, setLatest] = useState<PostCardData[]>([]);
+  const [latestPage, setLatestPage] = useState(0);
+  const [latestHasMore, setLatestHasMore] = useState(true);
+  const [latestLoading, setLatestLoading] = useState(false);
   const [sections, setSections] = useState<
     Array<HomeSection & { posts: PostCardData[]; slug: string }>
   >([]);
@@ -29,23 +38,20 @@ const Index = () => {
     document.title = "পটুয়াখালী এক্সপ্রেস — সর্বশেষ বাংলা সংবাদ";
 
     (async () => {
-      const select =
-        "id,title,slug,excerpt,image_url,published_at,category:categories(name,slug),source:sources(name,logo_url)";
-
       const [{ data: feat }, { data: lat }, { data: secs }] = await Promise.all([
         supabase
           .from("posts")
-          .select(select)
+          .select(SELECT)
           .eq("is_published", true)
           .eq("is_featured", true)
           .order("published_at", { ascending: false })
           .limit(5),
         supabase
           .from("posts")
-          .select(select)
+          .select(SELECT)
           .eq("is_published", true)
           .order("published_at", { ascending: false })
-          .limit(8),
+          .range(0, PAGE_SIZE - 1),
         supabase
           .from("home_sections")
           .select(
@@ -56,14 +62,15 @@ const Index = () => {
       ]);
 
       setFeatured((feat as PostCardData[]) ?? []);
-      setLatest((lat as PostCardData[]) ?? []);
+      const latestArr = (lat as PostCardData[]) ?? [];
+      setLatest(latestArr);
+      setLatestHasMore(latestArr.length === PAGE_SIZE);
 
-      // For each home_section, fetch posts + slug
       const builtSections = await Promise.all(
         (secs ?? []).map(async (s) => {
           let q = supabase
             .from("posts")
-            .select(select)
+            .select(SELECT)
             .eq("is_published", true)
             .order("published_at", { ascending: false })
             .limit(s.item_count || 6);
@@ -92,6 +99,24 @@ const Index = () => {
       setSections(builtSections);
     })();
   }, []);
+
+  const loadMore = async () => {
+    setLatestLoading(true);
+    const next = latestPage + 1;
+    const from = next * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    const { data } = await supabase
+      .from("posts")
+      .select(SELECT)
+      .eq("is_published", true)
+      .order("published_at", { ascending: false })
+      .range(from, to);
+    const arr = (data as PostCardData[]) ?? [];
+    setLatest((prev) => [...prev, ...arr]);
+    setLatestPage(next);
+    setLatestHasMore(arr.length === PAGE_SIZE);
+    setLatestLoading(false);
+  };
 
   const lead = featured[0] ?? latest[0];
   const sideFeatured = featured.slice(1, 5).length ? featured.slice(1, 5) : latest.slice(1, 5);
@@ -132,14 +157,39 @@ const Index = () => {
           </section>
         )}
 
-        {sections.map((s) => (
-          <CategorySection
-            key={s.id}
-            title={s.title}
-            slug={s.slug}
-            posts={s.posts}
-          />
-        ))}
+        <div className="grid gap-8 lg:grid-cols-[1fr_300px] mt-2">
+          <div className="min-w-0">
+            {sections.map((s) => (
+              <CategorySection
+                key={s.id}
+                title={s.title}
+                slug={s.slug}
+                posts={s.posts}
+              />
+            ))}
+
+            {latest.length > 0 && (
+              <section className="py-6">
+                <div className="flex items-center justify-between mb-4 border-b-2 border-primary pb-2">
+                  <h2 className="font-headline text-xl sm:text-2xl text-headline">সর্বশেষ সংবাদ</h2>
+                </div>
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {latest.map((p) => (
+                    <PostCard key={p.id} post={p} />
+                  ))}
+                </div>
+                {latestHasMore && (
+                  <div className="text-center mt-6">
+                    <Button onClick={loadMore} disabled={latestLoading} variant="outline">
+                      {latestLoading ? "লোড হচ্ছে..." : "আরও দেখুন"}
+                    </Button>
+                  </div>
+                )}
+              </section>
+            )}
+          </div>
+          <SidebarWidget />
+        </div>
       </main>
 
       <Footer />
