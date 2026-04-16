@@ -386,18 +386,36 @@ const Admin = () => {
                     <div className="min-w-0 flex-1">
                       <div className="text-sm font-medium truncate">{s.url}</div>
                       <div className="text-xs text-muted-foreground">
-                        {s.source?.name} → {s.category?.name} • {s.method} • প্রতি{" "}
-                        {s.interval_minutes} মিনিট
+                        {s.source?.name} → {s.category?.name} • {s.method}
                         {s.last_run_at && (
                           <> • সর্বশেষ: {new Date(s.last_run_at).toLocaleString("bn-BD")}</>
                         )}
                       </div>
                       {s.last_error && (
                         <div className="text-xs text-destructive mt-1 truncate">
-                          {s.last_error}
+                          ⚠ {s.last_error}
                         </div>
                       )}
                     </div>
+                    <Select
+                      value={String(s.interval_minutes)}
+                      onValueChange={(v) => updateInterval(s.id, Number(v))}
+                    >
+                      <SelectTrigger className="w-24 h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">১ মি</SelectItem>
+                        <SelectItem value="2">২ মি</SelectItem>
+                        <SelectItem value="5">৫ মি</SelectItem>
+                        <SelectItem value="15">১৫ মি</SelectItem>
+                        <SelectItem value="60">১ ঘণ্টা</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Switch
+                      checked={s.is_active}
+                      onCheckedChange={() => toggleScraper(s.id, s.is_active)}
+                    />
                     <Button
                       variant="ghost"
                       size="icon"
