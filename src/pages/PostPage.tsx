@@ -7,6 +7,7 @@ import { ExternalLink, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PhotocardModal from "@/components/PhotocardModal";
 import ShareButtons from "@/components/ShareButtons";
+import RelatedPosts from "@/components/RelatedPosts";
 
 interface Post {
   id: string;
@@ -17,6 +18,7 @@ interface Post {
   source_url: string | null;
   published_at: string;
   post_type: "auto" | "manual";
+  category_id: string | null;
   category: { name: string; slug: string } | null;
   source: { name: string; logo_url: string | null } | null;
 }
@@ -39,7 +41,7 @@ const PostPage = () => {
     supabase
       .from("posts")
       .select(
-        "id,title,excerpt,content,image_url,source_url,published_at,post_type,category:categories(name,slug),source:sources(name,logo_url)"
+        "id,title,excerpt,content,image_url,source_url,published_at,post_type,category_id,category:categories(name,slug),source:sources(name,logo_url)"
       )
       .eq("slug", slug)
       .eq("is_published", true)
@@ -168,6 +170,8 @@ const PostPage = () => {
             </div>
           )}
         </article>
+
+        <RelatedPosts categoryId={post.category_id} excludeId={post.id} />
 
         <PhotocardModal
           open={photocardOpen}
