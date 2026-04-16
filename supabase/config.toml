@@ -1,1 +1,7 @@
 project_id = "ikhaukjgiqairorzhlrd"
+
+[functions.run-scrapers]
+verify_jwt = false
+
+[functions.generate-photocard]
+verify_jwt = false
