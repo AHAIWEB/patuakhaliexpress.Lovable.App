@@ -8,7 +8,23 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Trash2, ArrowUp, ArrowDown, Plus } from "lucide-react";
+import { Trash2, Plus, GripVertical } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface Section {
   id: string;
@@ -25,6 +41,61 @@ interface Section {
 interface Cat { id: string; name: string; }
 interface Div { id: string; bn_name: string; }
 
+function SortableRow({
+  s, onUpdate, onDelete,
+}: {
+  s: Section;
+  onUpdate: (id: string, patch: Partial<Section>) => void;
+  onDelete: (id: string) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: s.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-2 p-3 bg-secondary/40 border border-border"
+    >
+      <button
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing touch-none p-1 text-muted-foreground hover:text-foreground"
+        aria-label="reorder"
+      >
+        <GripVertical className="h-4 w-4" />
+      </button>
+      <div className="flex-1 min-w-0">
+        <div className="font-medium text-sm">{s.title}</div>
+        <div className="text-xs text-muted-foreground">
+          {s.section_type} • {s.variant} • {s.item_count}টি
+        </div>
+      </div>
+      <Select value={s.variant} onValueChange={(v) => onUpdate(s.id, { variant: v })}>
+        <SelectTrigger className="w-24 h-8 text-xs"><SelectValue /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="grid">গ্রিড</SelectItem>
+          <SelectItem value="list">তালিকা</SelectItem>
+          <SelectItem value="hero">হিরো</SelectItem>
+        </SelectContent>
+      </Select>
+      <Input
+        type="number" min={1} max={12} value={s.item_count}
+        onChange={(e) => onUpdate(s.id, { item_count: Number(e.target.value) })}
+        className="w-16 h-8 text-xs"
+      />
+      <Switch checked={s.is_visible} onCheckedChange={(v) => onUpdate(s.id, { is_visible: v })} />
+      <Button size="icon" variant="ghost" onClick={() => onDelete(s.id)}>
+        <Trash2 className="h-4 w-4 text-destructive" />
+      </Button>
+    </div>
+  );
+}
+
 export default function HomeLayoutTab() {
   const [sections, setSections] = useState<Section[]>([]);
   const [cats, setCats] = useState<Cat[]>([]);
@@ -34,6 +105,11 @@ export default function HomeLayoutTab() {
   const [refId, setRefId] = useState("");
   const [variant, setVariant] = useState("grid");
   const [count, setCount] = useState(6);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } }),
+  );
 
   const load = async () => {
     const [{ data: secs }, { data: c }, { data: d }] = await Promise.all([
@@ -66,8 +142,8 @@ export default function HomeLayoutTab() {
   };
 
   const update = async (id: string, patch: Partial<Section>) => {
+    setSections((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
     await supabase.from("home_sections").update(patch).eq("id", id);
-    load();
   };
 
   const del = async (id: string) => {
@@ -76,8 +152,22 @@ export default function HomeLayoutTab() {
     load();
   };
 
-  const move = async (s: Section, dir: -1 | 1) => {
-    await update(s.id, { display_order: s.display_order + dir * 5 });
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = sections.findIndex((s) => s.id === active.id);
+    const newIndex = sections.findIndex((s) => s.id === over.id);
+    const reordered = arrayMove(sections, oldIndex, newIndex);
+    // Reassign display_order in steps of 10
+    const withOrder = reordered.map((s, i) => ({ ...s, display_order: (i + 1) * 10 }));
+    setSections(withOrder);
+    // Persist
+    await Promise.all(
+      withOrder.map((s) =>
+        supabase.from("home_sections").update({ display_order: s.display_order }).eq("id", s.id)
+      )
+    );
+    toast.success("ক্রম সংরক্ষিত");
   };
 
   return (
@@ -130,35 +220,18 @@ export default function HomeLayoutTab() {
       </section>
 
       <section className="bg-card border border-border p-5">
-        <h3 className="font-headline text-lg text-headline mb-3">হোমপেজ সেকশন ({sections.length})</h3>
-        <div className="space-y-2">
-          {sections.map((s) => (
-            <div key={s.id} className="flex items-center gap-2 p-3 bg-secondary/40 border border-border">
-              <div className="flex flex-col">
-                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => move(s, -1)}><ArrowUp className="h-3 w-3" /></Button>
-                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => move(s, 1)}><ArrowDown className="h-3 w-3" /></Button>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-sm">{s.title}</div>
-                <div className="text-xs text-muted-foreground">
-                  {s.section_type} • {s.variant} • {s.item_count}টি • order {s.display_order}
-                </div>
-              </div>
-              <Select value={s.variant} onValueChange={(v) => update(s.id, { variant: v })}>
-                <SelectTrigger className="w-24 h-8 text-xs"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="grid">গ্রিড</SelectItem>
-                  <SelectItem value="list">তালিকা</SelectItem>
-                  <SelectItem value="hero">হিরো</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input type="number" min={1} max={12} value={s.item_count} onChange={(e) => update(s.id, { item_count: Number(e.target.value) })} className="w-16 h-8 text-xs" />
-              <Switch checked={s.is_visible} onCheckedChange={(v) => update(s.id, { is_visible: v })} />
-              <Button size="icon" variant="ghost" onClick={() => del(s.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+        <h3 className="font-headline text-lg text-headline mb-1">হোমপেজ সেকশন ({sections.length})</h3>
+        <p className="text-xs text-muted-foreground mb-3">⋮⋮ আইকন ধরে টেনে সেকশন সাজান</p>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={sections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+            <div className="space-y-2">
+              {sections.map((s) => (
+                <SortableRow key={s.id} s={s} onUpdate={update} onDelete={del} />
+              ))}
             </div>
-          ))}
-          {sections.length === 0 && <p className="text-sm text-muted-foreground">কোনো সেকশন নেই।</p>}
-        </div>
+          </SortableContext>
+        </DndContext>
+        {sections.length === 0 && <p className="text-sm text-muted-foreground">কোনো সেকশন নেই।</p>}
       </section>
     </div>
   );

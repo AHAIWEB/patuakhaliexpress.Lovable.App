@@ -20,6 +20,7 @@ const Footer = () => {
           <ul className="space-y-1.5 text-sm opacity-80">
             <li><Link to="/" className="hover:text-primary-foreground">হোম</Link></li>
             <li><Link to="/photocard" className="hover:text-primary-foreground">ফটোকার্ড</Link></li>
+            <li><Link to="/gallery" className="hover:text-primary-foreground">গ্যালারি</Link></li>
             <li><Link to="/auth" className="hover:text-primary-foreground">লগইন</Link></li>
           </ul>
         </div>
