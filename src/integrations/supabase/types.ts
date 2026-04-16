@@ -21,6 +21,7 @@ export type Database = {
           hide_featured: boolean
           id: string
           name: string
+          parent_id: string | null
           show_in_menu: boolean
           slug: string
           updated_at: string
@@ -31,6 +32,7 @@ export type Database = {
           hide_featured?: boolean
           id?: string
           name: string
+          parent_id?: string | null
           show_in_menu?: boolean
           slug: string
           updated_at?: string
@@ -41,11 +43,151 @@ export type Database = {
           hide_featured?: boolean
           id?: string
           name?: string
+          parent_id?: string | null
           show_in_menu?: boolean
           slug?: string
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      districts: {
+        Row: {
+          bn_name: string
+          created_at: string
+          display_order: number
+          division_id: string
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          bn_name: string
+          created_at?: string
+          display_order?: number
+          division_id: string
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          bn_name?: string
+          created_at?: string
+          display_order?: number
+          division_id?: string
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "districts_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "divisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      divisions: {
+        Row: {
+          bn_name: string
+          created_at: string
+          display_order: number
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          bn_name: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          bn_name?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
         Relationships: []
+      }
+      home_sections: {
+        Row: {
+          category_id: string | null
+          config: Json
+          created_at: string
+          display_order: number
+          division_id: string | null
+          id: string
+          is_visible: boolean
+          item_count: number
+          section_type: string
+          title: string
+          updated_at: string
+          variant: string
+        }
+        Insert: {
+          category_id?: string | null
+          config?: Json
+          created_at?: string
+          display_order?: number
+          division_id?: string | null
+          id?: string
+          is_visible?: boolean
+          item_count?: number
+          section_type?: string
+          title: string
+          updated_at?: string
+          variant?: string
+        }
+        Update: {
+          category_id?: string | null
+          config?: Json
+          created_at?: string
+          display_order?: number
+          division_id?: string | null
+          id?: string
+          is_visible?: boolean
+          item_count?: number
+          section_type?: string
+          title?: string
+          updated_at?: string
+          variant?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "home_sections_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "home_sections_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "divisions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       photocards: {
         Row: {
@@ -83,6 +225,8 @@ export type Database = {
           content: string | null
           created_at: string
           created_by: string | null
+          district_id: string | null
+          division_id: string | null
           excerpt: string | null
           id: string
           image_url: string | null
@@ -94,6 +238,7 @@ export type Database = {
           source_id: string | null
           source_url: string | null
           title: string
+          upazila_id: string | null
           updated_at: string
         }
         Insert: {
@@ -101,6 +246,8 @@ export type Database = {
           content?: string | null
           created_at?: string
           created_by?: string | null
+          district_id?: string | null
+          division_id?: string | null
           excerpt?: string | null
           id?: string
           image_url?: string | null
@@ -112,6 +259,7 @@ export type Database = {
           source_id?: string | null
           source_url?: string | null
           title: string
+          upazila_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -119,6 +267,8 @@ export type Database = {
           content?: string | null
           created_at?: string
           created_by?: string | null
+          district_id?: string | null
+          division_id?: string | null
           excerpt?: string | null
           id?: string
           image_url?: string | null
@@ -130,6 +280,7 @@ export type Database = {
           source_id?: string | null
           source_url?: string | null
           title?: string
+          upazila_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -141,10 +292,31 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "posts_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "divisions"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "posts_source_id_fkey"
             columns: ["source_id"]
             isOneToOne: false
             referencedRelation: "sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_upazila_id_fkey"
+            columns: ["upazila_id"]
+            isOneToOne: false
+            referencedRelation: "upazilas"
             referencedColumns: ["id"]
           },
         ]
@@ -259,6 +431,47 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      upazilas: {
+        Row: {
+          bn_name: string
+          created_at: string
+          display_order: number
+          district_id: string
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          bn_name: string
+          created_at?: string
+          display_order?: number
+          district_id: string
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          bn_name?: string
+          created_at?: string
+          display_order?: number
+          district_id?: string
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "upazilas_district_id_fkey"
+            columns: ["district_id"]
+            isOneToOne: false
+            referencedRelation: "districts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
