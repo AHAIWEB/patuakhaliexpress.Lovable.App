@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Download, Wand2 } from "lucide-react";
+import { Loader2, Download, Wand2, Facebook } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -156,15 +156,30 @@ const PhotocardModal = ({ open, onOpenChange, sourceUrl, defaultText }: Props) =
               <blockquote className="italic text-center text-foreground border-l-4 border-primary pl-3">
                 &ldquo;{result.quote}&rdquo;
               </blockquote>
-              <a
-                href={result.image}
-                download="photocard.png"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 mx-auto w-fit rounded font-semibold"
-              >
-                <Download className="h-4 w-4" /> ডাউনলোড
-              </a>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <a
+                  href={result.image}
+                  download="photocard.png"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded font-semibold hover:bg-[hsl(var(--primary-glow))] transition-colors"
+                >
+                  <Download className="h-4 w-4" /> ডাউনলোড
+                </a>
+                <button
+                  type="button"
+                  onClick={() =>
+                    window.open(
+                      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(result.image)}`,
+                      "_blank",
+                      "noopener,noreferrer,width=600,height=500"
+                    )
+                  }
+                  className="inline-flex items-center gap-2 bg-[#1877F2] text-white px-4 py-2 rounded font-semibold hover:opacity-90 transition-opacity"
+                >
+                  <Facebook className="h-4 w-4" /> Facebook শেয়ার
+                </button>
+              </div>
             </div>
           )}
         </div>
