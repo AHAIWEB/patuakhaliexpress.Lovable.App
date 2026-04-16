@@ -7,66 +7,89 @@ import CategorySection from "@/components/CategorySection";
 import PostCard, { PostCardData } from "@/components/PostCard";
 import { Link } from "react-router-dom";
 
-interface Category {
+interface HomeSection {
   id: string;
-  name: string;
-  slug: string;
-  hide_featured: boolean;
+  title: string;
+  section_type: string;
+  category_id: string | null;
+  division_id: string | null;
+  variant: string;
+  item_count: number;
+  display_order: number;
 }
 
 const Index = () => {
   const [featured, setFeatured] = useState<PostCardData[]>([]);
   const [latest, setLatest] = useState<PostCardData[]>([]);
-  const [byCategory, setByCategory] = useState<Record<string, PostCardData[]>>({});
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [sections, setSections] = useState<
+    Array<HomeSection & { posts: PostCardData[]; slug: string }>
+  >([]);
 
   useEffect(() => {
     document.title = "পটুয়াখালী এক্সপ্রেস — সর্বশেষ বাংলা সংবাদ";
 
     (async () => {
-      const { data: cats } = await supabase
-        .from("categories")
-        .select("id,name,slug,hide_featured")
-        .order("display_order");
-      setCategories(cats ?? []);
-
       const select =
         "id,title,slug,excerpt,image_url,published_at,category:categories(name,slug),source:sources(name,logo_url)";
 
-      const { data: feat } = await supabase
-        .from("posts")
-        .select(select)
-        .eq("is_published", true)
-        .eq("is_featured", true)
-        .order("published_at", { ascending: false })
-        .limit(5);
-      setFeatured((feat as any) ?? []);
+      const [{ data: feat }, { data: lat }, { data: secs }] = await Promise.all([
+        supabase
+          .from("posts")
+          .select(select)
+          .eq("is_published", true)
+          .eq("is_featured", true)
+          .order("published_at", { ascending: false })
+          .limit(5),
+        supabase
+          .from("posts")
+          .select(select)
+          .eq("is_published", true)
+          .order("published_at", { ascending: false })
+          .limit(8),
+        supabase
+          .from("home_sections")
+          .select(
+            "id,title,section_type,category_id,division_id,variant,item_count,display_order"
+          )
+          .eq("is_visible", true)
+          .order("display_order"),
+      ]);
 
-      const { data: lat } = await supabase
-        .from("posts")
-        .select(select)
-        .eq("is_published", true)
-        .order("published_at", { ascending: false })
-        .limit(8);
-      setLatest((lat as any) ?? []);
+      setFeatured((feat as PostCardData[]) ?? []);
+      setLatest((lat as PostCardData[]) ?? []);
 
-      // Per-category
-      if (cats) {
-        const map: Record<string, PostCardData[]> = {};
-        await Promise.all(
-          cats.slice(0, 8).map(async (c) => {
+      // For each home_section, fetch posts + slug
+      const builtSections = await Promise.all(
+        (secs ?? []).map(async (s) => {
+          let q = supabase
+            .from("posts")
+            .select(select)
+            .eq("is_published", true)
+            .order("published_at", { ascending: false })
+            .limit(s.item_count || 6);
+          let slug = "";
+          if (s.section_type === "category" && s.category_id) {
+            q = q.eq("category_id", s.category_id);
             const { data } = await supabase
-              .from("posts")
-              .select(select)
-              .eq("is_published", true)
-              .eq("category_id", c.id)
-              .order("published_at", { ascending: false })
-              .limit(5);
-            map[c.slug] = (data as any) ?? [];
-          })
-        );
-        setByCategory(map);
-      }
+              .from("categories")
+              .select("slug")
+              .eq("id", s.category_id)
+              .maybeSingle();
+            slug = data?.slug ?? "";
+          } else if (s.section_type === "division" && s.division_id) {
+            q = q.eq("division_id", s.division_id);
+            const { data } = await supabase
+              .from("divisions")
+              .select("slug")
+              .eq("id", s.division_id)
+              .maybeSingle();
+            slug = data?.slug ?? "";
+          }
+          const { data: posts } = await q;
+          return { ...s, posts: (posts as PostCardData[]) ?? [], slug };
+        })
+      );
+      setSections(builtSections);
     })();
   }, []);
 
@@ -80,7 +103,6 @@ const Index = () => {
       <BreakingTicker />
 
       <main className="flex-1 container-news py-5">
-        {/* Featured / Hero */}
         {showFeaturedBlock ? (
           <section className="grid gap-5 lg:grid-cols-3">
             <div className="lg:col-span-2">
@@ -110,17 +132,14 @@ const Index = () => {
           </section>
         )}
 
-        {/* Per category sections */}
-        {categories
-          .filter((c) => !c.hide_featured)
-          .map((c) => (
-            <CategorySection
-              key={c.id}
-              title={c.name}
-              slug={c.slug}
-              posts={byCategory[c.slug] ?? []}
-            />
-          ))}
+        {sections.map((s) => (
+          <CategorySection
+            key={s.id}
+            title={s.title}
+            slug={s.slug}
+            posts={s.posts}
+          />
+        ))}
       </main>
 
       <Footer />

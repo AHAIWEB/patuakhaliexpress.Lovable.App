@@ -3,7 +3,9 @@ import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Image as ImageIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import PhotocardModal from "@/components/PhotocardModal";
 
 interface Post {
   id: string;
@@ -18,7 +20,6 @@ interface Post {
   source: { name: string; logo_url: string | null } | null;
 }
 
-// For aggregated content, show ~50% then link to source
 const truncateForFairUse = (text: string | null) => {
   if (!text) return "";
   const half = Math.floor(text.length * 0.5);
@@ -29,6 +30,7 @@ const PostPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
+  const [photocardOpen, setPhotocardOpen] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -42,7 +44,7 @@ const PostPage = () => {
       .eq("is_published", true)
       .maybeSingle()
       .then(({ data }) => {
-        setPost(data as any);
+        setPost(data as Post | null);
         if (data) document.title = `${data.title} — পটুয়াখালী এক্সপ্রেস`;
         setLoading(false);
       });
@@ -83,6 +85,10 @@ const PostPage = () => {
     minute: "2-digit",
   });
 
+  const photocardSeed = [post.title, post.excerpt, post.content?.slice(0, 1500)]
+    .filter(Boolean)
+    .join("\n\n");
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -104,6 +110,16 @@ const PostPage = () => {
               </>
             )}
             <span>{publishedAt}</span>
+          </div>
+
+          <div className="mt-3">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setPhotocardOpen(true)}
+            >
+              <ImageIcon className="h-4 w-4 mr-1" /> ফটোকার্ড বানান
+            </Button>
           </div>
 
           {post.image_url && (
@@ -146,6 +162,13 @@ const PostPage = () => {
             </div>
           )}
         </article>
+
+        <PhotocardModal
+          open={photocardOpen}
+          onOpenChange={setPhotocardOpen}
+          sourceUrl={post.source_url ?? undefined}
+          defaultText={photocardSeed}
+        />
       </main>
       <Footer />
     </div>
