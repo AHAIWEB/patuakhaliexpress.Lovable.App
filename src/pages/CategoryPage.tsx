@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PostCard, { PostCardData } from "@/components/PostCard";
 import SidebarWidget from "@/components/SidebarWidget";
-import { Button } from "@/components/ui/button";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
 const PAGE_SIZE = 10;
 const SELECT =
@@ -72,6 +72,8 @@ const CategoryPage = () => {
     setLoadingMore(false);
   };
 
+  const sentinelRef = useInfiniteScroll(loadMore, { hasMore, loading: loadingMore });
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -93,12 +95,9 @@ const CategoryPage = () => {
                     <PostCard key={p.id} post={p} variant="wide" />
                   ))}
                 </div>
-                {hasMore && (
-                  <div className="text-center mt-6">
-                    <Button onClick={loadMore} disabled={loadingMore} variant="outline">
-                      {loadingMore ? "লোড হচ্ছে..." : "আরও দেখুন"}
-                    </Button>
-                  </div>
+                <div ref={sentinelRef} className="h-10" />
+                {loadingMore && (
+                  <p className="text-center text-muted-foreground mt-4">লোড হচ্ছে...</p>
                 )}
               </>
             )}
