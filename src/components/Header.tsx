@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { useThemeKey } from "@/hooks/useThemeKey";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,10 +35,52 @@ interface District {
 
 const Header = () => {
   const settings = useSiteSettings();
+  const theme = useThemeKey();
   const [categories, setCategories] = useState<Category[]>([]);
   const [divisions, setDivisions] = useState<Division[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
   const [today, setToday] = useState("");
+
+  // Theme-specific styling for header chrome and nav links
+  const headerClass =
+    theme === "bold"
+      ? "sticky top-0 z-40 bg-background border-b border-primary/40 shadow-[0_4px_20px_-8px_hsl(var(--primary)/0.4)]"
+      : theme === "classic"
+      ? "sticky top-0 z-40 bg-background border-b-4 border-double border-foreground/70"
+      : theme === "masonry"
+      ? "sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border shadow-sm"
+      : theme === "minimal"
+      ? "sticky top-0 z-40 bg-background border-b border-border/60"
+      : theme === "magazine"
+      ? "sticky top-0 z-40 bg-background border-b-2 border-foreground/80"
+      : "sticky top-0 z-40 bg-background border-b border-border shadow-sm";
+
+  const navWrapClass =
+    theme === "bold"
+      ? "bg-background border-y border-primary/40 hidden md:block"
+      : theme === "classic"
+      ? "bg-background border-y border-foreground/30 hidden md:block"
+      : theme === "masonry"
+      ? "bg-card hidden md:block"
+      : theme === "minimal"
+      ? "bg-background border-t border-border/60 hidden md:block"
+      : "bg-primary text-primary-foreground hidden md:block";
+
+  const navLinkClass = (() => {
+    const base = "text-sm font-semibold whitespace-nowrap transition-all";
+    switch (theme) {
+      case "bold":
+        return `px-4 py-3 ${base} text-foreground hover:text-primary uppercase tracking-wider`;
+      case "classic":
+        return `px-4 py-3 ${base} text-foreground hover:text-primary font-headline`;
+      case "masonry":
+        return `mx-1 my-2 px-4 py-1.5 ${base} text-foreground hover:bg-primary hover:text-primary-foreground rounded-full`;
+      case "minimal":
+        return `px-4 py-3 ${base} text-foreground/80 hover:text-foreground hover:underline underline-offset-8`;
+      default:
+        return `px-3 py-2.5 ${base} hover:bg-[hsl(var(--primary-glow))]`;
+    }
+  })();
 
   useEffect(() => {
     (async () => {
@@ -76,7 +119,7 @@ const Header = () => {
     districts.filter((d) => d.division_id === divId);
 
   return (
-    <header className="sticky top-0 z-40 bg-background border-b border-border shadow-sm">
+    <header className={headerClass}>
       {/* Top bar */}
       <div className="bg-[hsl(var(--headline))] text-primary-foreground text-xs">
         <div className="container-news flex items-center justify-between py-1.5">
@@ -189,30 +232,23 @@ const Header = () => {
       </div>
 
       {/* Category nav (desktop) */}
-      <nav className="bg-primary text-primary-foreground hidden md:block">
+      <nav className={navWrapClass}>
         <div className="container-news flex items-center gap-1 overflow-x-auto">
-          <Link
-            to="/"
-            className="px-3 py-2.5 text-sm font-semibold hover:bg-[hsl(var(--primary-glow))] transition-colors whitespace-nowrap"
-          >
+          <Link to="/" className={navLinkClass}>
             হোম
           </Link>
           {topCats.map((c) => {
             const subs = childrenOf(c.id);
             if (subs.length === 0) {
               return (
-                <Link
-                  key={c.id}
-                  to={`/category/${c.slug}`}
-                  className="px-3 py-2.5 text-sm font-semibold hover:bg-[hsl(var(--primary-glow))] transition-colors whitespace-nowrap"
-                >
+                <Link key={c.id} to={`/category/${c.slug}`} className={navLinkClass}>
                   {c.name}
                 </Link>
               );
             }
             return (
               <DropdownMenu key={c.id}>
-                <DropdownMenuTrigger className="px-3 py-2.5 text-sm font-semibold hover:bg-[hsl(var(--primary-glow))] transition-colors whitespace-nowrap inline-flex items-center gap-1 outline-none">
+                <DropdownMenuTrigger className={`${navLinkClass} inline-flex items-center gap-1 outline-none`}>
                   {c.name} <ChevronDown className="h-3 w-3" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="bg-background z-50">
@@ -233,7 +269,7 @@ const Header = () => {
           {/* Geo dropdown */}
           {divisions.length > 0 && (
             <DropdownMenu>
-              <DropdownMenuTrigger className="px-3 py-2.5 text-sm font-semibold hover:bg-[hsl(var(--primary-glow))] transition-colors whitespace-nowrap inline-flex items-center gap-1 outline-none">
+              <DropdownMenuTrigger className={`${navLinkClass} inline-flex items-center gap-1 outline-none`}>
                 বিভাগ <ChevronDown className="h-3 w-3" />
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-background z-50 max-h-[70vh] overflow-y-auto">

@@ -12,6 +12,7 @@ import Admin from "./pages/Admin.tsx";
 import Photocard from "./pages/Photocard.tsx";
 import Gallery from "./pages/Gallery.tsx";
 import GeoPage from "./pages/GeoPage.tsx";
+import ThemeSwitcher from "./components/ThemeSwitcher.tsx";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/upazila/:slug" element={<GeoPage level="upazila" />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <ThemeSwitcher />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
