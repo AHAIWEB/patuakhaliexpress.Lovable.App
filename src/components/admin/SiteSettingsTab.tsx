@@ -80,6 +80,68 @@ export default function SiteSettingsTab() {
 
   return (
     <div className="space-y-6">
+      {/* Home Theme Picker */}
+      <section className="bg-card border border-border p-5 space-y-4">
+        <div>
+          <h3 className="font-headline text-lg text-headline">হোমপেজ থিম</h3>
+          <p className="text-xs text-muted-foreground mt-1">
+            ৪টি ভিন্ন ডিজাইন — সিলেক্ট করলে হোম, ক্যাটাগরি, পোস্ট সব পেজে apply হবে
+          </p>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {THEMES.map((t) => {
+            const active = (s.home_theme ?? "hybrid") === t.key;
+            const bg = t.tokens["--background"] ?? "0 0% 100%";
+            const fg = t.tokens["--foreground"] ?? "220 15% 12%";
+            const primary = t.tokens["--primary"] ?? "354 78% 46%";
+            const accent = t.tokens["--accent"] ?? "38 92% 50%";
+            return (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => update({ home_theme: t.key })}
+                className={`relative text-left border-2 transition-all overflow-hidden rounded-md ${
+                  active ? "border-primary ring-2 ring-primary/30" : "border-border hover:border-primary/50"
+                }`}
+              >
+                {active && (
+                  <span className="absolute top-2 right-2 z-10 h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                    <Check className="h-3.5 w-3.5" />
+                  </span>
+                )}
+                {/* Mini preview */}
+                <div
+                  className="aspect-[16/10] p-3 flex flex-col gap-1.5"
+                  style={{ background: `hsl(${bg})`, color: `hsl(${fg})` }}
+                >
+                  <div className="flex items-center gap-1">
+                    <div className="h-2 w-2 rounded-full" style={{ background: `hsl(${primary})` }} />
+                    <div className="h-2 flex-1 rounded-sm" style={{ background: `hsl(${primary} / 0.6)` }} />
+                  </div>
+                  <div className="grid grid-cols-3 gap-1 flex-1">
+                    <div className="col-span-2 rounded-sm" style={{ background: `hsl(${primary} / 0.15)` }} />
+                    <div className="space-y-1">
+                      <div className="h-2 rounded-sm" style={{ background: `hsl(${accent} / 0.7)` }} />
+                      <div className="h-2 rounded-sm" style={{ background: `hsl(${fg} / 0.15)` }} />
+                      <div className="h-2 rounded-sm" style={{ background: `hsl(${fg} / 0.1)` }} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1">
+                    <div className="h-3 rounded-sm" style={{ background: `hsl(${fg} / 0.1)` }} />
+                    <div className="h-3 rounded-sm" style={{ background: `hsl(${fg} / 0.1)` }} />
+                    <div className="h-3 rounded-sm" style={{ background: `hsl(${fg} / 0.1)` }} />
+                  </div>
+                </div>
+                <div className="p-2.5 bg-card border-t border-border">
+                  <div className="font-headline text-sm text-headline">{t.name}</div>
+                  <div className="text-[10px] text-muted-foreground line-clamp-2 mt-0.5">{t.description}</div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
       {/* Brand identity */}
       <section className="bg-card border border-border p-5 space-y-4">
         <h3 className="font-headline text-lg text-headline">সাইট পরিচিতি</h3>
