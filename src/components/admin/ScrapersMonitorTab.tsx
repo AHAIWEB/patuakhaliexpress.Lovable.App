@@ -22,6 +22,10 @@ const ScrapersMonitorTab = () => {
   const [loading, setLoading] = useState(true);
   const [runningAll, setRunningAll] = useState(false);
   const [runningId, setRunningId] = useState<string | null>(null);
+  const [continuousMode, setContinuousMode] = useState(false);
+  const [batchStats, setBatchStats] = useState<{ batches: number; inserted: number }>({ batches: 0, inserted: 0 });
+  const continuousRef = useRef(false);
+  const timerRef = useRef<number | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -52,6 +56,52 @@ const ScrapersMonitorTab = () => {
       setRunningAll(false);
     }
   };
+
+  const stopContinuous = () => {
+    continuousRef.current = false;
+    setContinuousMode(false);
+    if (timerRef.current) {
+      window.clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    toast.info("কন্টিনিউয়াস মোড বন্ধ");
+  };
+
+  const runContinuous = async () => {
+    if (continuousRef.current) return stopContinuous();
+    continuousRef.current = true;
+    setContinuousMode(true);
+    setBatchStats({ batches: 0, inserted: 0 });
+    toast.success("কন্টিনিউয়াস ব্যাচ শুরু — queue=0 না হওয়া পর্যন্ত চলবে");
+
+    const tick = async () => {
+      if (!continuousRef.current) return;
+      try {
+        const { data, error } = await supabase.functions.invoke("run-scrapers", { body: {} });
+        if (error) throw error;
+        const processed = Number(data?.processed ?? 0);
+        const inserted = Number(data?.inserted ?? 0);
+        setBatchStats((s) => ({ batches: s.batches + 1, inserted: s.inserted + inserted }));
+        await load();
+        if (processed === 0) {
+          toast.success(`✓ Queue শেষ — মোট ${inserted} নতুন পোস্ট`);
+          stopContinuous();
+          return;
+        }
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "ব্যাচ ত্রুটি");
+      }
+      if (continuousRef.current) {
+        timerRef.current = window.setTimeout(tick, 30000);
+      }
+    };
+    tick();
+  };
+
+  useEffect(() => () => {
+    continuousRef.current = false;
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+  }, []);
 
   const runOne = async (id: string) => {
     setRunningId(id);
