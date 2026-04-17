@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { ExternalLink, Image as ImageIcon, Eye } from "lucide-react";
+import { ExternalLink, Image as ImageIcon, Eye, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PhotocardModal from "@/components/PhotocardModal";
 import ShareButtons from "@/components/ShareButtons";
 import RelatedPosts from "@/components/RelatedPosts";
 import SEO from "@/components/SEO";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Post {
   id: string;
@@ -24,22 +25,19 @@ interface Post {
   source: { name: string; logo_url: string | null } | null;
 }
 
-const truncateForFairUse = (text: string | null) => {
-  if (!text) return "";
-  const half = Math.floor(text.length * 0.5);
-  return text.slice(0, half);
-};
-
 const PostPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [photocardOpen, setPhotocardOpen] = useState(false);
   const [viewCount, setViewCount] = useState<number>(0);
+  const [expanded, setExpanded] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!slug) return;
     setLoading(true);
+    setExpanded(false);
     supabase
       .from("posts")
       .select(
@@ -52,7 +50,6 @@ const PostPage = () => {
         setPost(data as Post | null);
         if (data) {
           document.title = `${data.title} — পটুয়াখালী এক্সপ্রেস`;
-          // Throttle: 1 view per post per session
           const key = `pv:${data.id}`;
           if (!sessionStorage.getItem(key)) {
             sessionStorage.setItem(key, "1");
@@ -66,6 +63,17 @@ const PostPage = () => {
         setLoading(false);
       });
   }, [slug]);
+
+  const isAggregated = post?.post_type === "auto";
+  const fullContent = post?.content ?? "";
+  const halfPoint = useMemo(
+    () => Math.floor(fullContent.length * 0.5),
+    [fullContent]
+  );
+  const showPaywall = isAggregated && fullContent.length > 400 && !expanded;
+  const visibleContent = showPaywall
+    ? fullContent.slice(0, halfPoint)
+    : fullContent;
 
   if (loading) {
     return (
@@ -88,11 +96,6 @@ const PostPage = () => {
       </div>
     );
   }
-
-  const isAggregated = post.post_type === "auto";
-  const displayContent = isAggregated
-    ? truncateForFairUse(post.content)
-    : post.content ?? "";
 
   const publishedAt = new Date(post.published_at).toLocaleString("bn-BD", {
     day: "numeric",
@@ -165,11 +168,7 @@ const PostPage = () => {
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setPhotocardOpen(true)}
-            >
+            <Button size="sm" variant="outline" onClick={() => setPhotocardOpen(true)}>
               <ImageIcon className="h-4 w-4 mr-1" /> ফটোকার্ড বানান
             </Button>
             <ShareButtons title={post.title} compact />
@@ -190,20 +189,51 @@ const PostPage = () => {
             </p>
           )}
 
-          {displayContent && (
-            <div className="prose prose-lg max-w-none mt-5 text-foreground whitespace-pre-line leading-relaxed">
-              {displayContent}
+          {visibleContent && (
+            <div className="relative">
+              <div className="prose prose-lg max-w-none mt-5 text-foreground whitespace-pre-line leading-relaxed">
+                {visibleContent}
+              </div>
+              {showPaywall && (
+                <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/90 to-transparent" />
+              )}
             </div>
           )}
 
-          <div className="mt-6 pt-4 border-t border-border">
-            <ShareButtons title={post.title} />
-          </div>
+          {/* Paywall CTA */}
+          {showPaywall && (
+            <div className="mt-2 p-5 border border-primary/30 bg-primary/5 text-center space-y-3">
+              <p className="text-sm text-muted-foreground">
+                সম্পূর্ণ সংবাদটি পড়তে নিচের যেকোনো একটি বেছে নিন —
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {!isMobile && (
+                  <Button onClick={() => setExpanded(true)} variant="default">
+                    <BookOpen className="h-4 w-4 mr-1" /> বাকি অংশ পড়ুন
+                  </Button>
+                )}
+                {post.source_url && (
+                  <a
+                    href={post.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 font-semibold hover:bg-[hsl(var(--primary-glow))] transition-colors"
+                  >
+                    মূল সাইটে পড়ুন <ExternalLink className="h-4 w-4" />
+                  </a>
+                )}
+              </div>
+              {post.source?.name && (
+                <p className="text-xs text-meta">সোর্স: {post.source.name}</p>
+              )}
+            </div>
+          )}
 
-          {isAggregated && post.source_url && (
+          {/* If expanded or not aggregated → show source link at bottom */}
+          {!showPaywall && isAggregated && post.source_url && (
             <div className="mt-6 p-4 border border-border bg-secondary/50">
               <p className="text-sm text-muted-foreground mb-2">
-                এই সংবাদের সম্পূর্ণ অংশ পড়তে মূল সোর্সে যান —
+                কপিরাইট ও মূল সংবাদটি দেখতে —
               </p>
               <a
                 href={post.source_url}
@@ -211,13 +241,17 @@ const PostPage = () => {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 font-semibold hover:bg-[hsl(var(--primary-glow))] transition-colors"
               >
-                আরও পড়ুন <ExternalLink className="h-4 w-4" />
+                মূল সোর্সে যান <ExternalLink className="h-4 w-4" />
               </a>
               {post.source?.name && (
                 <p className="text-xs text-meta mt-2">সোর্স: {post.source.name}</p>
               )}
             </div>
           )}
+
+          <div className="mt-6 pt-4 border-t border-border">
+            <ShareButtons title={post.title} />
+          </div>
         </article>
 
         <RelatedPosts categoryId={post.category_id} excludeId={post.id} />
