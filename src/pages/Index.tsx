@@ -6,6 +6,7 @@ import BreakingTicker from "@/components/BreakingTicker";
 import CategorySection from "@/components/CategorySection";
 import PostCard, { PostCardData } from "@/components/PostCard";
 import SidebarWidget from "@/components/SidebarWidget";
+import DivisionsTabs from "@/components/DivisionsTabs";
 import { Link } from "react-router-dom";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
@@ -164,6 +165,7 @@ const Index = () => {
 
         <div className="grid gap-8 lg:grid-cols-[1fr_300px] mt-2">
           <div className="min-w-0">
+            <DivisionsTabs />
             {sections.map((s) => (
               <CategorySection
                 key={s.id}
