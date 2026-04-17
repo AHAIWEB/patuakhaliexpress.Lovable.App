@@ -49,10 +49,25 @@ const DEFAULTS: SiteSettings = {
 let cache: SiteSettings | null = null;
 const subscribers = new Set<(s: SiteSettings) => void>();
 
+const LS_KEY = "visitor_theme_override";
+export const getThemeOverride = (): ThemeKey | null => {
+  if (typeof localStorage === "undefined") return null;
+  return (localStorage.getItem(LS_KEY) as ThemeKey | null) || null;
+};
+export const setThemeOverride = (key: ThemeKey | null) => {
+  if (typeof localStorage === "undefined") return;
+  if (key) localStorage.setItem(LS_KEY, key);
+  else localStorage.removeItem(LS_KEY);
+  if (cache) apply(cache);
+  if (cache) subscribers.forEach((fn) => fn({ ...cache! }));
+};
+
 const apply = (s: SiteSettings) => {
   const root = document.documentElement;
-  // Apply theme presets first (background/foreground/card/etc), then user color overrides on top
-  applyThemeTokens(s.home_theme);
+  // Visitor override takes precedence over admin default
+  const override = getThemeOverride();
+  const effective = override ?? s.home_theme;
+  applyThemeTokens(effective);
   root.style.setProperty("--primary", `${s.primary_hue} ${s.primary_saturation}% ${s.primary_lightness}%`);
   root.style.setProperty(
     "--primary-glow",
