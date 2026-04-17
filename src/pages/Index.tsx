@@ -165,6 +165,7 @@ const Index = () => {
 
         <div className="grid gap-8 lg:grid-cols-[1fr_300px] mt-2">
           <div className="min-w-0">
+            <DivisionsTabs />
             {sections.map((s) => (
               <CategorySection
                 key={s.id}
