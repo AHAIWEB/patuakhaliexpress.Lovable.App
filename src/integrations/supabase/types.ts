@@ -429,6 +429,72 @@ export type Database = {
           },
         ]
       }
+      site_settings: {
+        Row: {
+          accent_hue: number
+          accent_lightness: number
+          accent_saturation: number
+          base_font_size: number
+          body_font: string
+          headline_font: string
+          headline_weight: number
+          id: number
+          og_image_url: string | null
+          primary_hue: number
+          primary_lightness: number
+          primary_saturation: number
+          show_breaking_ticker: boolean
+          show_divisions_tabs: boolean
+          show_hero_block: boolean
+          show_latest_section: boolean
+          site_description: string
+          site_name: string
+          updated_at: string
+        }
+        Insert: {
+          accent_hue?: number
+          accent_lightness?: number
+          accent_saturation?: number
+          base_font_size?: number
+          body_font?: string
+          headline_font?: string
+          headline_weight?: number
+          id?: number
+          og_image_url?: string | null
+          primary_hue?: number
+          primary_lightness?: number
+          primary_saturation?: number
+          show_breaking_ticker?: boolean
+          show_divisions_tabs?: boolean
+          show_hero_block?: boolean
+          show_latest_section?: boolean
+          site_description?: string
+          site_name?: string
+          updated_at?: string
+        }
+        Update: {
+          accent_hue?: number
+          accent_lightness?: number
+          accent_saturation?: number
+          base_font_size?: number
+          body_font?: string
+          headline_font?: string
+          headline_weight?: number
+          id?: number
+          og_image_url?: string | null
+          primary_hue?: number
+          primary_lightness?: number
+          primary_saturation?: number
+          show_breaking_ticker?: boolean
+          show_divisions_tabs?: boolean
+          show_hero_block?: boolean
+          show_latest_section?: boolean
+          site_description?: string
+          site_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sources: {
         Row: {
           base_url: string | null
