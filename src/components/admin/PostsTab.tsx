@@ -3,12 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Trash2, Search, Star, Eye, EyeOff, Pencil } from "lucide-react";
+import { Trash2, Search, Star, Eye, EyeOff, Pencil, CheckSquare, Square } from "lucide-react";
 
 interface PostRow {
   id: string;
@@ -35,6 +35,7 @@ export default function PostsTab() {
   const [filterCat, setFilterCat] = useState<string>("all");
   const [filterType, setFilterType] = useState<string>("all");
   const [editing, setEditing] = useState<PostRow | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const load = async () => {
     let query = supabase
@@ -47,6 +48,7 @@ export default function PostsTab() {
     if (q.trim()) query = query.ilike("title", `%${q.trim()}%`);
     const { data } = await query;
     setPosts((data as PostRow[]) ?? []);
+    setSelected(new Set());
   };
 
   useEffect(() => {
@@ -70,6 +72,45 @@ export default function PostsTab() {
     load();
   };
 
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+  const toggleSelectAll = () => {
+    if (selected.size === posts.length) setSelected(new Set());
+    else setSelected(new Set(posts.map((p) => p.id)));
+  };
+
+  const bulkAction = async (
+    action: "publish" | "unpublish" | "feature" | "unfeature" | "delete"
+  ) => {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return toast.error("কোনো পোস্ট সিলেক্ট করা নেই");
+    if (action === "delete" && !confirm(`${ids.length}টি পোস্ট মুছবেন?`)) return;
+
+    let res;
+    if (action === "delete") {
+      res = await supabase.from("posts").delete().in("id", ids);
+    } else {
+      const patch: Record<string, boolean> =
+        action === "publish" ? { is_published: true }
+        : action === "unpublish" ? { is_published: false }
+        : action === "feature" ? { is_featured: true }
+        : { is_featured: false };
+      res = await supabase.from("posts").update(patch).in("id", ids);
+    }
+    if (res.error) {
+      toast.error(res.error.message);
+      return;
+    }
+    toast.success(`${ids.length}টি পোস্টে অপারেশন সম্পন্ন`);
+    load();
+  };
+
   const saveEdit = async () => {
     if (!editing) return;
     await supabase
@@ -86,6 +127,8 @@ export default function PostsTab() {
     setEditing(null);
     load();
   };
+
+  const allSelected = selected.size === posts.length && posts.length > 0;
 
   return (
     <div className="space-y-4">
@@ -120,16 +163,58 @@ export default function PostsTab() {
         </div>
       </section>
 
+      {selected.size > 0 && (
+        <section className="bg-primary/10 border-2 border-primary p-3 flex flex-wrap items-center gap-2 sticky top-0 z-10">
+          <span className="text-sm font-medium mr-2">{selected.size}টি সিলেক্টেড</span>
+          <Button size="sm" variant="outline" onClick={() => bulkAction("publish")}>
+            <Eye className="h-4 w-4 mr-1" /> Publish
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => bulkAction("unpublish")}>
+            <EyeOff className="h-4 w-4 mr-1" /> Unpublish
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => bulkAction("feature")}>
+            <Star className="h-4 w-4 mr-1" /> Featured
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => bulkAction("unfeature")}>
+            <Star className="h-4 w-4 mr-1" /> Unfeatured
+          </Button>
+          <Button size="sm" variant="destructive" onClick={() => bulkAction("delete")}>
+            <Trash2 className="h-4 w-4 mr-1" /> ডিলিট
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setSelected(new Set())} className="ml-auto">
+            বাতিল
+          </Button>
+        </section>
+      )}
+
       <section className="bg-card border border-border p-4">
-        <div className="text-sm text-muted-foreground mb-3">{posts.length}টি পোস্ট</div>
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-sm text-muted-foreground">{posts.length}টি পোস্ট</div>
+          <Button size="sm" variant="ghost" onClick={toggleSelectAll}>
+            {allSelected ? <CheckSquare className="h-4 w-4 mr-1" /> : <Square className="h-4 w-4 mr-1" />}
+            সব সিলেক্ট
+          </Button>
+        </div>
         <div className="space-y-2">
           {posts.map((p) => (
-            <div key={p.id} className="flex items-start gap-2 p-2 border border-border bg-secondary/30">
+            <div
+              key={p.id}
+              className={`flex items-start gap-2 p-2 border bg-secondary/30 ${
+                selected.has(p.id) ? "border-primary bg-primary/5" : "border-border"
+              }`}
+            >
+              <Checkbox
+                checked={selected.has(p.id)}
+                onCheckedChange={() => toggleSelect(p.id)}
+                className="mt-2"
+              />
               {p.image_url && <img src={p.image_url} alt="" className="w-16 h-12 object-cover" />}
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium truncate">{p.title}</div>
                 <div className="text-xs text-muted-foreground">
                   {p.category?.name ?? "—"} • {p.source?.name ?? "ম্যানুয়াল"} • {p.post_type}
+                  {!p.is_published && " • অপ্রকাশিত"}
+                  {p.is_featured && " • ⭐"}
                 </div>
               </div>
               <Button size="icon" variant="ghost" onClick={() => toggleFeatured(p)} title="ফিচার্ড">
