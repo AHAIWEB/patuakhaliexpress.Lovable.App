@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
+import { Upload, X } from "lucide-react";
 import { refreshSiteSettings, type SiteSettings } from "@/hooks/useSiteSettings";
 
 const PRESETS = [
@@ -29,6 +30,7 @@ export default function SiteSettingsTab() {
   const [s, setS] = useState<Partial<SiteSettings>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState<"logo" | "og" | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -39,6 +41,27 @@ export default function SiteSettingsTab() {
   }, []);
 
   const update = (patch: Partial<SiteSettings>) => setS((p) => ({ ...p, ...patch }));
+
+  const uploadImage = async (file: File, kind: "logo" | "og") => {
+    if (!file.type.startsWith("image/")) return toast.error("শুধু ছবি আপলোড করুন");
+    if (file.size > 2 * 1024 * 1024) return toast.error("সর্বোচ্চ 2MB");
+    setUploading(kind);
+    const ext = file.name.split(".").pop() || "png";
+    const path = `${kind}-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("site-assets").upload(path, file, { upsert: true });
+    if (error) {
+      toast.error(error.message);
+      setUploading(null);
+      return;
+    }
+    const { data } = supabase.storage.from("site-assets").getPublicUrl(path);
+    const patch = kind === "logo" ? { logo_url: data.publicUrl } : { og_image_url: data.publicUrl };
+    setS((p) => ({ ...p, ...patch }));
+    await supabase.from("site_settings").update(patch).eq("id", 1);
+    await refreshSiteSettings();
+    toast.success("আপলোড সম্পন্ন");
+    setUploading(null);
+  };
 
   const save = async () => {
     setSaving(true);
@@ -56,15 +79,77 @@ export default function SiteSettingsTab() {
   return (
     <div className="space-y-6">
       {/* Brand identity */}
-      <section className="bg-card border border-border p-5 space-y-3">
+      <section className="bg-card border border-border p-5 space-y-4">
         <h3 className="font-headline text-lg text-headline">সাইট পরিচিতি</h3>
+
+        {/* Logo + OG image upload */}
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label>সাইট লোগো (Header-এ দেখাবে)</Label>
+            <div className="flex items-center gap-3 p-3 border border-border bg-secondary/30 min-h-[88px]">
+              {s.logo_url ? (
+                <>
+                  <img src={s.logo_url} alt="logo" className="h-14 w-auto object-contain bg-white rounded" />
+                  <Button
+                    variant="ghost" size="icon"
+                    onClick={async () => {
+                      update({ logo_url: null });
+                      await supabase.from("site_settings").update({ logo_url: null }).eq("id", 1);
+                      await refreshSiteSettings();
+                    }}
+                  >
+                    <X className="h-4 w-4 text-destructive" />
+                  </Button>
+                </>
+              ) : (
+                <span className="text-xs text-muted-foreground">লোগো নেই — ডিফল্ট টেক্সট দেখাবে</span>
+              )}
+              <label className="ml-auto">
+                <input
+                  type="file" accept="image/*" hidden
+                  onChange={(e) => e.target.files?.[0] && uploadImage(e.target.files[0], "logo")}
+                />
+                <Button size="sm" variant="outline" asChild disabled={uploading === "logo"}>
+                  <span className="cursor-pointer">
+                    <Upload className="h-3.5 w-3.5 mr-1" />
+                    {uploading === "logo" ? "আপলোড..." : "আপলোড"}
+                  </span>
+                </Button>
+              </label>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>OG / Share Image (1200x630 প্রস্তাবিত)</Label>
+            <div className="flex items-center gap-3 p-3 border border-border bg-secondary/30 min-h-[88px]">
+              {s.og_image_url ? (
+                <img src={s.og_image_url} alt="og" className="h-14 w-auto object-contain rounded" />
+              ) : (
+                <span className="text-xs text-muted-foreground">কোনো OG ইমেজ নেই</span>
+              )}
+              <label className="ml-auto">
+                <input
+                  type="file" accept="image/*" hidden
+                  onChange={(e) => e.target.files?.[0] && uploadImage(e.target.files[0], "og")}
+                />
+                <Button size="sm" variant="outline" asChild disabled={uploading === "og"}>
+                  <span className="cursor-pointer">
+                    <Upload className="h-3.5 w-3.5 mr-1" />
+                    {uploading === "og" ? "আপলোড..." : "আপলোড"}
+                  </span>
+                </Button>
+              </label>
+            </div>
+          </div>
+        </div>
+
         <div className="grid gap-3 md:grid-cols-2">
           <div>
             <Label>সাইটের নাম</Label>
             <Input value={s.site_name ?? ""} onChange={(e) => update({ site_name: e.target.value })} />
           </div>
           <div>
-            <Label>OG Image URL</Label>
+            <Label>OG Image URL (manual)</Label>
             <Input value={s.og_image_url ?? ""} onChange={(e) => update({ og_image_url: e.target.value })} placeholder="https://..." />
           </div>
           <div className="md:col-span-2">

@@ -19,6 +19,7 @@ export interface SiteSettings {
   site_name: string;
   site_description: string;
   og_image_url: string | null;
+  logo_url: string | null;
 }
 
 const DEFAULTS: SiteSettings = {
@@ -39,6 +40,7 @@ const DEFAULTS: SiteSettings = {
   site_name: "পটুয়াখালী এক্সপ্রেস",
   site_description: "সর্বশেষ বাংলা সংবাদ এক জায়গায়।",
   og_image_url: null,
+  logo_url: null,
 };
 
 let cache: SiteSettings | null = null;
