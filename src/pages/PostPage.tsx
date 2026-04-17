@@ -126,6 +126,10 @@ const PostPage = () => {
               </>
             )}
             <span>{publishedAt}</span>
+            <span>•</span>
+            <span className="inline-flex items-center gap-1">
+              <Eye className="h-3.5 w-3.5" /> {viewCount.toLocaleString("bn-BD")} ভিউ
+            </span>
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -191,6 +195,7 @@ const PostPage = () => {
           onOpenChange={setPhotocardOpen}
           sourceUrl={post.source_url ?? undefined}
           defaultText={photocardSeed}
+          categoryId={post.category_id}
         />
       </main>
       <Footer />
