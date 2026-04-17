@@ -438,6 +438,7 @@ export type Database = {
           body_font: string
           headline_font: string
           headline_weight: number
+          home_theme: string
           id: number
           logo_url: string | null
           og_image_url: string | null
@@ -460,6 +461,7 @@ export type Database = {
           body_font?: string
           headline_font?: string
           headline_weight?: number
+          home_theme?: string
           id?: number
           logo_url?: string | null
           og_image_url?: string | null
@@ -482,6 +484,7 @@ export type Database = {
           body_font?: string
           headline_font?: string
           headline_weight?: number
+          home_theme?: string
           id?: number
           logo_url?: string | null
           og_image_url?: string | null
