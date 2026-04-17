@@ -8,6 +8,8 @@ import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import { Upload, X } from "lucide-react";
 import { refreshSiteSettings, type SiteSettings } from "@/hooks/useSiteSettings";
+import { THEMES } from "@/lib/themes";
+import { Check } from "lucide-react";
 
 const PRESETS = [
   { name: "ক্লাসিক লাল", h: 354, s: 78, l: 46 },
@@ -35,7 +37,7 @@ export default function SiteSettingsTab() {
   useEffect(() => {
     (async () => {
       const { data } = await supabase.from("site_settings").select("*").eq("id", 1).maybeSingle();
-      if (data) setS(data);
+      if (data) setS(data as Partial<SiteSettings>);
       setLoading(false);
     })();
   }, []);
