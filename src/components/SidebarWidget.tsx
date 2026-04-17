@@ -25,16 +25,23 @@ const SidebarWidget = () => {
           .eq("is_published", true)
           .order("published_at", { ascending: false })
           .limit(6),
-        supabase
+        supabase.rpc("get_popular_posts", { _days: 7, _limit: 6 }),
+      ]);
+      setLatest((lat as MiniPost[]) ?? []);
+      const popArr = (pop as MiniPost[] | null) ?? [];
+      // Fallback: if no views in last 7 days, show featured posts
+      if (popArr.length === 0) {
+        const { data: feat } = await supabase
           .from("posts")
           .select(select)
           .eq("is_published", true)
           .eq("is_featured", true)
           .order("published_at", { ascending: false })
-          .limit(6),
-      ]);
-      setLatest((lat as MiniPost[]) ?? []);
-      setPopular((pop as MiniPost[]) ?? []);
+          .limit(6);
+        setPopular((feat as MiniPost[]) ?? []);
+      } else {
+        setPopular(popArr);
+      }
     })();
   }, []);
 
@@ -68,7 +75,7 @@ const SidebarWidget = () => {
       </section>
       <section className="bg-card border border-border p-4">
         <h3 className="flex items-center gap-2 font-headline text-base text-headline border-b-2 border-primary pb-2 mb-3">
-          <TrendingUp className="h-4 w-4" /> জনপ্রিয়
+          <TrendingUp className="h-4 w-4" /> সর্বাধিক পঠিত (৭ দিন)
         </h3>
         {renderList(popular)}
       </section>
