@@ -244,7 +244,8 @@ Deno.serve(async (req) => {
     let cfgQuery = supabase
       .from("scraper_configs")
       .select("id,url,method,category_id,source_id,interval_minutes,last_run_at")
-      .eq("is_active", true);
+      .eq("is_active", true)
+      .order("last_run_at", { ascending: true, nullsFirst: true });
     if (onlyConfigId) cfgQuery = cfgQuery.eq("id", onlyConfigId);
     const { data: configs, error: cfgErr } = await cfgQuery;
     if (cfgErr) throw cfgErr;
@@ -257,12 +258,14 @@ Deno.serve(async (req) => {
     (divs ?? []).forEach((d: any) => divMap.set(d.slug, d.id));
 
     const now = Date.now();
-    const due = (configs ?? []).filter((c: ScraperRow) => {
+    const dueAll = (configs ?? []).filter((c: ScraperRow) => {
       if (force || onlyConfigId) return true;
       if (!c.last_run_at) return true;
       const elapsed = (now - new Date(c.last_run_at).getTime()) / 60000;
       return elapsed >= c.interval_minutes;
     });
+    // Process oldest-first, capped at limit
+    const due = dueAll.slice(0, limit);
 
     let inserted = 0;
     const errors: string[] = [];
