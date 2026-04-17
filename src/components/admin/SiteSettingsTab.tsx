@@ -85,10 +85,10 @@ export default function SiteSettingsTab() {
         <div>
           <h3 className="font-headline text-lg text-headline">হোমপেজ থিম</h3>
           <p className="text-xs text-muted-foreground mt-1">
-            ৪টি ভিন্ন ডিজাইন — সিলেক্ট করলে হোম, ক্যাটাগরি, পোস্ট সব পেজে apply হবে
+            ৬টি ভিন্ন ডিজাইন — সিলেক্ট করলে হোম, ক্যাটাগরি, পোস্ট সব পেজে apply হবে
           </p>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
           {THEMES.map((t) => {
             const active = (s.home_theme ?? "hybrid") === t.key;
             const bg = t.tokens["--background"] ?? "0 0% 100%";

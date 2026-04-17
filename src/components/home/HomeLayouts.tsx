@@ -279,3 +279,105 @@ export const BoldLayout = (p: HomeLayoutProps) => (
     </div>
   </>
 );
+
+/* ============== MASONRY (Pinterest-style card grid) ============== */
+export const MasonryLayout = (p: HomeLayoutProps) => {
+  const all = [
+    ...(p.lead ? [p.lead] : []),
+    ...p.sideFeatured,
+    ...p.sections.flatMap((s) => s.posts),
+    ...p.latest,
+  ];
+  const seen = new Set<string>();
+  const items = all.filter((x) => (seen.has(x.id) ? false : (seen.add(x.id), true)));
+
+  return (
+    <>
+      {p.showDivisionsTabs && <DivisionsTabs />}
+      <section className="py-4">
+        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
+          {items.map((post) => (
+            <div key={post.id} className="break-inside-avoid mb-4">
+              <PostCard post={post} />
+            </div>
+          ))}
+        </div>
+        <div ref={p.sentinelRef} className="h-10" />
+        {p.latestLoading && (
+          <p className="text-center text-muted-foreground mt-4">লোড হচ্ছে...</p>
+        )}
+      </section>
+    </>
+  );
+};
+
+/* ============== CLASSIC NEWSPAPER (serif, multi-column, ruled) ============== */
+export const ClassicLayout = (p: HomeLayoutProps) => (
+  <>
+    {p.showFeaturedBlock && p.lead && (
+      <section className="border-y-[3px] border-double border-foreground py-5 mb-6">
+        <div className="text-center mb-4">
+          <span className="text-[10px] uppercase tracking-[0.4em] text-foreground/70">
+            — মুখ্য সংবাদ —
+          </span>
+        </div>
+        <article className="grid lg:grid-cols-[2fr_1fr] gap-6 items-start">
+          <div>
+            {p.lead.image_url && (
+              <div className="aspect-[16/9] overflow-hidden mb-4 border border-border">
+                <img src={p.lead.image_url} alt={p.lead.title} className="w-full h-full object-cover" />
+              </div>
+            )}
+            <a href={`/post/${p.lead.slug}`}>
+              <h1 className="font-headline text-3xl sm:text-4xl lg:text-5xl text-headline leading-[1.15] text-balance hover:underline decoration-primary decoration-2 underline-offset-4">
+                {p.lead.title}
+              </h1>
+            </a>
+            {p.lead.excerpt && (
+              <p className="mt-3 text-base text-foreground/80 leading-relaxed columns-1 sm:columns-2 gap-6 first-letter:text-5xl first-letter:font-headline first-letter:float-left first-letter:mr-2 first-letter:leading-[0.9]">
+                {p.lead.excerpt}
+              </p>
+            )}
+          </div>
+          <aside className="border-l border-border pl-5 space-y-4 divide-y divide-border">
+            {p.sideFeatured.slice(0, 4).map((post) => (
+              <a key={post.id} href={`/post/${post.slug}`} className="block pt-4 first:pt-0 group">
+                {post.category && (
+                  <div className="text-[10px] uppercase tracking-widest text-primary mb-1">
+                    {post.category.name}
+                  </div>
+                )}
+                <h3 className="font-headline text-base text-headline leading-snug group-hover:underline">
+                  {post.title}
+                </h3>
+              </a>
+            ))}
+          </aside>
+        </article>
+      </section>
+    )}
+    {p.showDivisionsTabs && <DivisionsTabs />}
+    {p.sections.map((s) => (
+      <CategorySection key={s.id} title={s.title} slug={s.slug} posts={s.posts} variant={s.variant} />
+    ))}
+    {p.showLatestSection && p.latest.length > 0 && (
+      <section className="py-8 grid lg:grid-cols-[1fr_300px] gap-8">
+        <div>
+          <div className="border-b-[3px] border-double border-foreground pb-2 mb-5">
+            <h2 className="font-headline text-2xl sm:text-3xl text-headline">সর্বশেষ সংবাদ</h2>
+          </div>
+          <div className="columns-1 md:columns-2 gap-6">
+            {p.latest.map((post) => (
+              <div key={post.id} className="break-inside-avoid mb-6">
+                <PostCard post={post} variant="wide" />
+              </div>
+            ))}
+          </div>
+          <div ref={p.sentinelRef} className="h-10" />
+          {p.latestLoading && <p className="text-center text-muted-foreground mt-4">লোড হচ্ছে...</p>}
+        </div>
+        <SidebarWidget />
+      </section>
+    )}
+  </>
+);
