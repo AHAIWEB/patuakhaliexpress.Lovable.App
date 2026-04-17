@@ -8,7 +8,8 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Trash2, Plus, GripVertical } from "lucide-react";
+import { Trash2, Plus, GripVertical, Eye, EyeOff } from "lucide-react";
+import HomeLayoutPreview from "./HomeLayoutPreview";
 import {
   DndContext,
   closestCenter,
@@ -105,6 +106,7 @@ export default function HomeLayoutTab() {
   const [refId, setRefId] = useState("");
   const [variant, setVariant] = useState("grid");
   const [count, setCount] = useState(6);
+  const [showPreview, setShowPreview] = useState(true);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -220,8 +222,15 @@ export default function HomeLayoutTab() {
       </section>
 
       <section className="bg-card border border-border p-5">
-        <h3 className="font-headline text-lg text-headline mb-1">হোমপেজ সেকশন ({sections.length})</h3>
-        <p className="text-xs text-muted-foreground mb-3">⋮⋮ আইকন ধরে টেনে সেকশন সাজান</p>
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h3 className="font-headline text-lg text-headline">হোমপেজ সেকশন ({sections.length})</h3>
+            <p className="text-xs text-muted-foreground">⋮⋮ আইকন ধরে টেনে সেকশন সাজান</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => setShowPreview((v) => !v)}>
+            {showPreview ? <><EyeOff className="h-4 w-4 mr-1" /> প্রিভিউ লুকান</> : <><Eye className="h-4 w-4 mr-1" /> লাইভ প্রিভিউ</>}
+          </Button>
+        </div>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={sections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
             <div className="space-y-2">
@@ -233,6 +242,16 @@ export default function HomeLayoutTab() {
         </DndContext>
         {sections.length === 0 && <p className="text-sm text-muted-foreground">কোনো সেকশন নেই।</p>}
       </section>
+
+      {showPreview && sections.length > 0 && (
+        <section className="bg-card border border-border p-5">
+          <h3 className="font-headline text-lg text-headline mb-1">লাইভ প্রিভিউ</h3>
+          <p className="text-xs text-muted-foreground mb-4">
+            পরিবর্তন করার সাথে সাথে এখানে আপডেট হবে — variant/আইটেম-সংখ্যা দেখুন
+          </p>
+          <HomeLayoutPreview sections={sections} />
+        </section>
+      )}
     </div>
   );
 }
