@@ -23,12 +23,18 @@ interface Photocard {
   source_url: string | null;
   created_at: string;
   created_by: string | null;
+  category_id: string | null;
 }
 
 interface Source {
   id: string;
   name: string;
   base_url: string | null;
+}
+
+interface Category {
+  id: string;
+  name: string;
 }
 
 const PAGE = 18;
@@ -40,9 +46,11 @@ const Gallery = () => {
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [sources, setSources] = useState<Source[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const reqId = useRef(0);
 
   useEffect(() => {
@@ -56,6 +64,11 @@ const Gallery = () => {
       .select("id,name,base_url")
       .order("name")
       .then(({ data }) => setSources((data as Source[]) ?? []));
+    supabase
+      .from("categories")
+      .select("id,name")
+      .order("display_order")
+      .then(({ data }) => setCategories((data as Category[]) ?? []));
     return () => sub.subscription.unsubscribe();
   }, []);
 
