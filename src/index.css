@@ -162,3 +162,145 @@
     text-wrap: balance;
   }
 }
+
+/* ---------- Theme-aware article typography ---------- */
+@layer components {
+  /* Base prose tuned per theme */
+  .article-prose {
+    font-family: var(--font-body);
+    line-height: 1.75;
+    font-size: 1.0625rem;
+  }
+
+  /* Classic — newspaper feel + drop-cap on first paragraph */
+  [data-theme="classic"] .article-prose {
+    font-family: 'Noto Serif Bengali', 'Hind Siliguri', Georgia, serif;
+    line-height: 1.85;
+    font-size: 1.125rem;
+    text-align: justify;
+    hyphens: auto;
+  }
+  [data-theme="classic"] .article-prose::first-letter {
+    float: left;
+    font-family: var(--font-headline);
+    font-weight: 800;
+    font-size: 4.25rem;
+    line-height: 0.9;
+    padding: 0.35rem 0.6rem 0 0;
+    color: hsl(var(--primary));
+  }
+  [data-theme="classic"] .article-lede {
+    font-family: 'Noto Serif Bengali', Georgia, serif;
+    font-style: italic;
+    border-left: 3px double hsl(var(--primary));
+    padding-left: 1rem;
+  }
+  [data-theme="classic"] .article-headline {
+    border-top: 3px double hsl(var(--primary));
+    border-bottom: 1px solid hsl(var(--primary));
+    padding: 0.75rem 0;
+    text-align: center;
+  }
+
+  /* Bold — dramatic display + large pull-quotes */
+  [data-theme="bold"] .article-prose {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    letter-spacing: 0.005em;
+  }
+  [data-theme="bold"] .article-prose p + p {
+    margin-top: 1.25rem;
+  }
+  [data-theme="bold"] .article-lede {
+    font-size: 1.5rem;
+    line-height: 1.4;
+    font-weight: 600;
+    color: hsl(var(--headline));
+    padding: 1rem 0;
+    border-top: 4px solid hsl(var(--primary));
+    border-bottom: 4px solid hsl(var(--primary));
+  }
+  [data-theme="bold"] .article-headline {
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+  [data-theme="bold"] .article-prose blockquote,
+  [data-theme="bold"] .pull-quote {
+    font-family: var(--font-headline);
+    font-size: 1.875rem;
+    line-height: 1.25;
+    font-weight: 800;
+    color: hsl(var(--primary));
+    border-left: 6px solid hsl(var(--primary));
+    padding: 0.5rem 0 0.5rem 1.25rem;
+    margin: 1.75rem 0;
+  }
+
+  /* Minimal — wide line-height + airy spacing */
+  [data-theme="minimal"] .article-prose {
+    line-height: 2;
+    font-size: 1.0625rem;
+    color: hsl(var(--foreground) / 0.88);
+    max-width: 65ch;
+  }
+  [data-theme="minimal"] .article-prose p + p {
+    margin-top: 1.5rem;
+  }
+  [data-theme="minimal"] .article-lede {
+    font-size: 1.25rem;
+    line-height: 1.7;
+    color: hsl(var(--muted-foreground));
+    font-weight: 400;
+  }
+  [data-theme="minimal"] .article-headline {
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+
+  /* Magazine — editorial rhythm */
+  [data-theme="magazine"] .article-lede {
+    font-size: 1.35rem;
+    line-height: 1.5;
+    font-weight: 500;
+    color: hsl(var(--headline));
+  }
+  [data-theme="magazine"] .article-prose {
+    font-size: 1.1rem;
+    line-height: 1.75;
+  }
+
+  /* Masonry — soft, rounded reading block */
+  [data-theme="masonry"] .article-prose {
+    line-height: 1.8;
+  }
+
+  /* Theme-aware category page heading */
+  .cat-heading {
+    @apply font-headline text-2xl sm:text-3xl text-headline inline-flex items-center gap-3 pb-2 mb-6 border-b-2 border-primary;
+  }
+  [data-theme="classic"] .cat-heading {
+    border-top: 3px double hsl(var(--primary));
+    border-bottom: 3px double hsl(var(--primary));
+    padding: 0.5rem 0;
+    justify-content: center;
+    width: 100%;
+    font-style: italic;
+  }
+  [data-theme="bold"] .cat-heading {
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    border: none;
+    background: linear-gradient(90deg, hsl(var(--primary)), transparent);
+    padding: 0.75rem 1rem;
+    color: hsl(var(--primary-foreground));
+    width: 100%;
+  }
+  [data-theme="minimal"] .cat-heading {
+    border: none;
+    border-bottom: 1px solid hsl(var(--border));
+    font-weight: 500;
+    color: hsl(var(--muted-foreground));
+  }
+}
