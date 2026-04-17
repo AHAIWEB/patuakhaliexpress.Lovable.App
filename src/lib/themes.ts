@@ -1,7 +1,7 @@
 // Home theme registry — defines the 4 available themes,
 // their visual tokens, fonts, and a short label for the admin picker.
 
-export type ThemeKey = "hybrid" | "magazine" | "minimal" | "bold";
+export type ThemeKey = "hybrid" | "magazine" | "minimal" | "bold" | "masonry" | "classic";
 
 export interface ThemeDef {
   key: ThemeKey;
@@ -101,6 +101,47 @@ export const THEMES: ThemeDef[] = [
     },
     fonts: { headline: "Baloo Da 2", body: "Hind Siliguri" },
     cardStyle: "elevated",
+  },
+  {
+    key: "masonry",
+    name: "কার্ড গ্রিড",
+    english: "Card Grid (Pinterest)",
+    description: "Pinterest-style masonry — variable height cards, soft shadows, rounded corners",
+    tokens: {
+      "--primary": "340 82% 52%",
+      "--primary-glow": "340 90% 62%",
+      "--accent": "260 75% 60%",
+      "--background": "30 25% 97%",
+      "--foreground": "240 15% 12%",
+      "--card": "0 0% 100%",
+      "--border": "30 15% 90%",
+      "--headline": "240 25% 10%",
+      "--muted": "30 20% 94%",
+      "--radius": "1rem",
+    },
+    fonts: { headline: "Hind Siliguri", body: "Hind Siliguri" },
+    cardStyle: "rounded",
+  },
+  {
+    key: "classic",
+    name: "ক্লাসিক সংবাদপত্র",
+    english: "Classic Newspaper",
+    description: "Serif-heavy, column-based layout — পুরোনো ছাপাখানার মতো ভাব",
+    tokens: {
+      "--primary": "0 0% 8%",
+      "--primary-glow": "0 65% 40%",
+      "--accent": "0 70% 38%",
+      "--background": "40 30% 96%",
+      "--foreground": "30 15% 8%",
+      "--card": "40 25% 98%",
+      "--border": "30 20% 75%",
+      "--headline": "0 0% 5%",
+      "--muted": "40 20% 92%",
+      "--muted-foreground": "30 10% 35%",
+      "--radius": "0rem",
+    },
+    fonts: { headline: "Tiro Bangla", body: "Mina" },
+    cardStyle: "sharp",
   },
 ];
 

@@ -13,6 +13,8 @@ import {
   MagazineLayout,
   MinimalLayout,
   BoldLayout,
+  MasonryLayout,
+  ClassicLayout,
   type HomeLayoutProps,
 } from "@/components/home/HomeLayouts";
 
@@ -193,6 +195,10 @@ const Index = () => {
         return <MinimalLayout {...layoutProps} />;
       case "bold":
         return <BoldLayout {...layoutProps} />;
+      case "masonry":
+        return <MasonryLayout {...layoutProps} />;
+      case "classic":
+        return <ClassicLayout {...layoutProps} />;
       case "hybrid":
       default:
         return <HybridLayout {...layoutProps} />;
