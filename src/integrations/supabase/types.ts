@@ -439,6 +439,7 @@ export type Database = {
           headline_font: string
           headline_weight: number
           id: number
+          logo_url: string | null
           og_image_url: string | null
           primary_hue: number
           primary_lightness: number
@@ -460,6 +461,7 @@ export type Database = {
           headline_font?: string
           headline_weight?: number
           id?: number
+          logo_url?: string | null
           og_image_url?: string | null
           primary_hue?: number
           primary_lightness?: number
@@ -481,6 +483,7 @@ export type Database = {
           headline_font?: string
           headline_weight?: number
           id?: number
+          logo_url?: string | null
           og_image_url?: string | null
           primary_hue?: number
           primary_lightness?: number
