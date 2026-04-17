@@ -14,7 +14,8 @@ interface Props {
   noindex?: boolean;
 }
 
-const SITE_NAME = "পটুয়াখালী এক্সপ্রেস";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
+
 const DEFAULT_IMAGE = "/placeholder.svg";
 
 const SEO = ({
@@ -30,9 +31,11 @@ const SEO = ({
   canonical,
   noindex,
 }: Props) => {
+  const settings = useSiteSettings();
+  const SITE_NAME = settings.site_name || "পটুয়াখালী এক্সপ্রেস";
   const fullUrl = url ?? (typeof window !== "undefined" ? window.location.href : "");
   const fullCanonical = canonical ?? fullUrl;
-  const ogImage = image || DEFAULT_IMAGE;
+  const ogImage = image || settings.og_image_url || settings.logo_url || DEFAULT_IMAGE;
   const finalTitle = title.includes(SITE_NAME) ? title : `${title} — ${SITE_NAME}`;
   const desc = (description ?? "").slice(0, 160);
 
