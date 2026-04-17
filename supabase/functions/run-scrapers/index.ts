@@ -231,10 +231,12 @@ Deno.serve(async (req) => {
     // Parse body for optional config_id (manual single-run trigger)
     let onlyConfigId: string | null = null;
     let force = false;
+    let limit = 8; // process at most N configs per invocation to avoid timeout
     try {
       const body = await req.json();
       if (body?.config_id) onlyConfigId = String(body.config_id);
       if (body?.force) force = true;
+      if (typeof body?.limit === "number") limit = Math.max(1, Math.min(20, body.limit));
     } catch {
       // ignore
     }
