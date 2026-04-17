@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Play, RefreshCw, CheckCircle2, AlertCircle, Clock } from "lucide-react";
+import { Play, RefreshCw, CheckCircle2, AlertCircle, Clock, StopCircle, Zap } from "lucide-react";
 
 interface ScraperRow {
   id: string;
@@ -99,19 +99,34 @@ const ScrapersMonitorTab = () => {
       </section>
 
       <section className="bg-card border border-border p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-headline text-lg text-headline">স্ক্রেপার মনিটরিং</h2>
-          <div className="flex gap-2">
-            <Button onClick={load} variant="outline" size="sm">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <div>
+            <h2 className="font-headline text-lg text-headline">স্ক্রেপার মনিটরিং</h2>
+            {continuousMode && (
+              <p className="text-xs text-primary mt-1">
+                <Zap className="h-3 w-3 inline mr-1" />
+                কন্টিনিউয়াস চলছে — ব্যাচ {batchStats.batches}, নতুন পোস্ট {batchStats.inserted}
+              </p>
+            )}
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <Button onClick={load} variant="outline" size="sm" disabled={continuousMode}>
               <RefreshCw className="h-3.5 w-3.5 mr-1" /> রিফ্রেশ
             </Button>
-            <Button onClick={runAll} disabled={runningAll} size="sm">
+            <Button onClick={runAll} disabled={runningAll || continuousMode} size="sm" variant="outline">
               {runningAll ? (
                 <RefreshCw className="h-3.5 w-3.5 mr-1 animate-spin" />
               ) : (
                 <Play className="h-3.5 w-3.5 mr-1" />
               )}
-              সব চালান
+              একবার চালান
+            </Button>
+            <Button onClick={runContinuous} size="sm" variant={continuousMode ? "destructive" : "default"}>
+              {continuousMode ? (
+                <><StopCircle className="h-3.5 w-3.5 mr-1" /> থামান</>
+              ) : (
+                <><Zap className="h-3.5 w-3.5 mr-1" /> সব চালান (কন্টিনিউয়াস)</>
+              )}
             </Button>
           </div>
         </div>
