@@ -90,7 +90,7 @@ const Gallery = () => {
     setHasMore(true);
     loadPage(0, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, sourceFilter]);
+  }, [search, sourceFilter, categoryFilter]);
 
   const loadPage = async (p: number, reset = false) => {
     setLoading(true);
@@ -99,7 +99,7 @@ const Gallery = () => {
     const to = from + PAGE - 1;
     let query = supabase
       .from("photocards")
-      .select("id,image_url,quote,source_url,created_at,created_by")
+      .select("id,image_url,quote,source_url,created_at,created_by,category_id")
       .not("image_url", "is", null)
       .order("created_at", { ascending: false })
       .range(from, to);
@@ -107,6 +107,9 @@ const Gallery = () => {
     if (search) query = query.ilike("quote", `%${search}%`);
     if (selectedSource?.base_url) {
       query = query.ilike("source_url", `%${selectedSource.base_url}%`);
+    }
+    if (categoryFilter !== "all") {
+      query = query.eq("category_id", categoryFilter);
     }
 
     const { data } = await query;
@@ -162,7 +165,7 @@ const Gallery = () => {
             />
           </div>
           <Select value={sourceFilter} onValueChange={setSourceFilter}>
-            <SelectTrigger className="sm:w-56">
+            <SelectTrigger className="sm:w-44">
               <SelectValue placeholder="সব সোর্স" />
             </SelectTrigger>
             <SelectContent>
@@ -170,6 +173,19 @@ const Gallery = () => {
               {sources.map((s) => (
                 <SelectItem key={s.id} value={s.id}>
                   {s.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="sm:w-44">
+              <SelectValue placeholder="সব ক্যাটাগরি" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">সব ক্যাটাগরি</SelectItem>
+              {categories.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
                 </SelectItem>
               ))}
             </SelectContent>
