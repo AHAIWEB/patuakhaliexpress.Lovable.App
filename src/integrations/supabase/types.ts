@@ -192,6 +192,7 @@ export type Database = {
       photocards: {
         Row: {
           card_size: string
+          category_id: string | null
           created_at: string
           created_by: string | null
           id: string
@@ -201,6 +202,7 @@ export type Database = {
         }
         Insert: {
           card_size?: string
+          category_id?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
@@ -210,12 +212,34 @@ export type Database = {
         }
         Update: {
           card_size?: string
+          category_id?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
           image_url?: string | null
           quote?: string | null
           source_url?: string | null
+        }
+        Relationships: []
+      }
+      post_views: {
+        Row: {
+          id: string
+          post_id: string
+          viewed_at: string
+          visitor_hash: string | null
+        }
+        Insert: {
+          id?: string
+          post_id: string
+          viewed_at?: string
+          visitor_hash?: string | null
+        }
+        Update: {
+          id?: string
+          post_id?: string
+          viewed_at?: string
+          visitor_hash?: string | null
         }
         Relationships: []
       }
@@ -499,6 +523,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_popular_posts: {
+        Args: { _days?: number; _limit?: number }
+        Returns: {
+          id: string
+          image_url: string
+          published_at: string
+          slug: string
+          title: string
+          view_count: number
+        }[]
+      }
+      get_post_view_count: { Args: { _post_id: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

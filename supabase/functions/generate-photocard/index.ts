@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { url, text: rawText, quote: providedQuote, size = "square" } = body ?? {};
+    const { url, text: rawText, quote: providedQuote, size = "square", category_id } = body ?? {};
 
     if (!url && !rawText && !providedQuote) {
       return new Response(
@@ -140,6 +140,7 @@ Deno.serve(async (req) => {
       quote,
       image_url: imageUrl,
       card_size: size,
+      category_id: category_id ?? null,
     });
 
     return new Response(

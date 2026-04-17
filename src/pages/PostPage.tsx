@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { ExternalLink, Image as ImageIcon } from "lucide-react";
+import { ExternalLink, Image as ImageIcon, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PhotocardModal from "@/components/PhotocardModal";
 import ShareButtons from "@/components/ShareButtons";
@@ -34,6 +34,7 @@ const PostPage = () => {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [photocardOpen, setPhotocardOpen] = useState(false);
+  const [viewCount, setViewCount] = useState<number>(0);
 
   useEffect(() => {
     if (!slug) return;
@@ -46,9 +47,21 @@ const PostPage = () => {
       .eq("slug", slug)
       .eq("is_published", true)
       .maybeSingle()
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         setPost(data as Post | null);
-        if (data) document.title = `${data.title} — পটুয়াখালী এক্সপ্রেস`;
+        if (data) {
+          document.title = `${data.title} — পটুয়াখালী এক্সপ্রেস`;
+          // Throttle: 1 view per post per session
+          const key = `pv:${data.id}`;
+          if (!sessionStorage.getItem(key)) {
+            sessionStorage.setItem(key, "1");
+            await supabase.from("post_views").insert({ post_id: data.id });
+          }
+          const { data: vc } = await supabase.rpc("get_post_view_count", {
+            _post_id: data.id,
+          });
+          setViewCount(Number(vc) || 0);
+        }
         setLoading(false);
       });
   }, [slug]);
@@ -113,6 +126,10 @@ const PostPage = () => {
               </>
             )}
             <span>{publishedAt}</span>
+            <span>•</span>
+            <span className="inline-flex items-center gap-1">
+              <Eye className="h-3.5 w-3.5" /> {viewCount.toLocaleString("bn-BD")} ভিউ
+            </span>
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -178,6 +195,7 @@ const PostPage = () => {
           onOpenChange={setPhotocardOpen}
           sourceUrl={post.source_url ?? undefined}
           defaultText={photocardSeed}
+          categoryId={post.category_id}
         />
       </main>
       <Footer />

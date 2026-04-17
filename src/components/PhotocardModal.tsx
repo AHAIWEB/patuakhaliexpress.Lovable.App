@@ -26,9 +26,11 @@ interface Props {
   sourceUrl?: string;
   /** Default text to seed AI quote extraction (e.g., excerpt + content) */
   defaultText?: string;
+  /** Category id of the source post (auto-tagged on photocard) */
+  categoryId?: string | null;
 }
 
-const PhotocardModal = ({ open, onOpenChange, sourceUrl, defaultText }: Props) => {
+const PhotocardModal = ({ open, onOpenChange, sourceUrl, defaultText, categoryId }: Props) => {
   const [mode, setMode] = useState<"auto" | "manual">("auto");
   const [text, setText] = useState(defaultText ?? "");
   const [manualQuote, setManualQuote] = useState("");
@@ -41,6 +43,7 @@ const PhotocardModal = ({ open, onOpenChange, sourceUrl, defaultText }: Props) =
     setResult(null);
     try {
       const body: Record<string, unknown> = { size };
+      if (categoryId) body.category_id = categoryId;
       if (mode === "manual") {
         if (!manualQuote.trim()) {
           toast.error("কোটেশন লিখুন");
