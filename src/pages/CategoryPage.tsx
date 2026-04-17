@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import PostCard, { PostCardData } from "@/components/PostCard";
 import SidebarWidget from "@/components/SidebarWidget";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import SEO from "@/components/SEO";
 
 const PAGE_SIZE = 10;
 const SELECT =
@@ -74,11 +75,38 @@ const CategoryPage = () => {
 
   const sentinelRef = useInfiniteScroll(loadMore, { hasMore, loading: loadingMore });
 
+  const siteUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const jsonLd = name
+    ? {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: `${name} — পটুয়াখালী এক্সপ্রেস`,
+        url: `${siteUrl}/category/${slug}`,
+        mainEntity: {
+          "@type": "ItemList",
+          itemListElement: posts.slice(0, 10).map((p, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            url: `${siteUrl}/post/${p.slug}`,
+            name: p.title,
+          })),
+        },
+      }
+    : undefined;
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      {name && (
+        <SEO
+          title={name}
+          description={`${name} বিভাগের সর্বশেষ বাংলা সংবাদ পড়ুন পটুয়াখালী এক্সপ্রেসে।`}
+          jsonLd={jsonLd}
+        />
+      )}
       <Header />
       <main className="flex-1 container-news py-6">
-        <h1 className="font-headline text-2xl sm:text-3xl text-headline border-b-2 border-primary pb-2 mb-6">
+        <h1 className="font-headline text-2xl sm:text-3xl text-headline inline-flex items-center gap-3 border-b-2 border-primary pb-2 mb-6">
+          <span className="inline-block w-1.5 h-7 bg-primary" />
           {name || "ক্যাটাগরি"}
         </h1>
 

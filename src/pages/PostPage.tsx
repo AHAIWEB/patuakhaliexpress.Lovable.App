@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import PhotocardModal from "@/components/PhotocardModal";
 import ShareButtons from "@/components/ShareButtons";
 import RelatedPosts from "@/components/RelatedPosts";
+import SEO from "@/components/SEO";
 
 interface Post {
   id: string;
@@ -105,8 +106,39 @@ const PostPage = () => {
     .filter(Boolean)
     .join("\n\n");
 
+  const siteUrl = typeof window !== "undefined" ? window.location.origin : "";
+  const articleUrl = `${siteUrl}/post/${slug}`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: post.title,
+    description: post.excerpt ?? undefined,
+    image: post.image_url ? [post.image_url] : undefined,
+    datePublished: post.published_at,
+    dateModified: post.published_at,
+    author: { "@type": "Organization", name: post.source?.name ?? "পটুয়াখালী এক্সপ্রেস" },
+    publisher: {
+      "@type": "Organization",
+      name: "পটুয়াখালী এক্সপ্রেস",
+      logo: { "@type": "ImageObject", url: `${siteUrl}/placeholder.svg` },
+    },
+    mainEntityOfPage: { "@type": "WebPage", "@id": articleUrl },
+    articleSection: post.category?.name,
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <SEO
+        title={post.title}
+        description={post.excerpt ?? post.content?.slice(0, 160) ?? undefined}
+        image={post.image_url}
+        type="article"
+        publishedTime={post.published_at}
+        modifiedTime={post.published_at}
+        section={post.category?.name}
+        jsonLd={jsonLd}
+        url={articleUrl}
+      />
       <Header />
       <main className="flex-1 container-news py-6 max-w-3xl">
         <article>

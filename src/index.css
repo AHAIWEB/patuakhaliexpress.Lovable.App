@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* পটুয়াখালী এক্সপ্রেস ডিজাইন সিস্টেম
-   সব রঙ HSL — লাল প্রাইমারি, jagonews24 অনুপ্রাণিত */
+   সব রঙ HSL — magazine-style hybrid: hero magazine + clean cards + grid */
 
 @layer base {
   :root {
@@ -16,12 +16,12 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 15% 12%;
 
-    /* Brand red */
+    /* Brand red — runtime overridable via site_settings */
     --primary: 354 78% 46%;
     --primary-foreground: 0 0% 100%;
     --primary-glow: 354 85% 56%;
 
-    --secondary: 210 20% 96%;
+    --secondary: 210 20% 97%;
     --secondary-foreground: 220 15% 12%;
 
     --muted: 210 20% 96%;
@@ -45,10 +45,19 @@
     --category-tag: 354 78% 46%;
     --link-hover: 354 78% 40%;
 
-    --gradient-hero: linear-gradient(180deg, hsl(354 78% 46%) 0%, hsl(354 85% 38%) 100%);
-    --gradient-overlay: linear-gradient(180deg, transparent 0%, hsla(220 25% 8% / 0.85) 100%);
-    --shadow-card: 0 1px 3px hsl(220 15% 12% / 0.08), 0 1px 2px hsl(220 15% 12% / 0.04);
-    --shadow-card-hover: 0 8px 24px hsl(220 15% 12% / 0.12);
+    /* Runtime tokens controlled by SiteSettings */
+    --base-font-size: 16px;
+    --headline-weight: 700;
+    --font-headline: 'Noto Serif Bengali', 'Hind Siliguri', serif;
+    --font-body: 'Hind Siliguri', system-ui, sans-serif;
+
+    --gradient-hero: linear-gradient(180deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.9) 100%);
+    --gradient-overlay: linear-gradient(180deg, transparent 0%, hsla(220 25% 8% / 0.9) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--muted)) 100%);
+    --shadow-card: 0 1px 2px hsl(220 15% 12% / 0.06), 0 1px 3px hsl(220 15% 12% / 0.04);
+    --shadow-card-hover: 0 12px 28px -8px hsl(var(--primary) / 0.18), 0 4px 12px hsl(220 15% 12% / 0.08);
+    --shadow-lead: 0 20px 40px -12px hsl(220 25% 8% / 0.35);
+    --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
@@ -82,18 +91,25 @@
   }
 
   html {
-    font-family: 'Hind Siliguri', system-ui, -apple-system, sans-serif;
+    font-family: var(--font-body);
+    font-size: var(--base-font-size);
   }
 
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Hind Siliguri', system-ui, sans-serif;
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-body);
+    font-feature-settings: "kern", "liga", "calt";
   }
 
   h1, h2, h3, h4, .font-headline {
-    font-family: 'Noto Serif Bengali', 'Hind Siliguri', serif;
-    font-weight: 700;
-    letter-spacing: -0.01em;
+    font-family: var(--font-headline);
+    font-weight: var(--headline-weight);
+    letter-spacing: -0.015em;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.18);
+    color: hsl(var(--headline));
   }
 }
 
@@ -101,10 +117,48 @@
   .news-link {
     @apply transition-colors duration-150 hover:text-primary;
   }
+
   .category-tag {
-    @apply inline-block bg-primary text-primary-foreground text-xs font-semibold px-2 py-0.5 uppercase tracking-wide;
+    @apply inline-block bg-primary text-primary-foreground text-xs font-bold px-2.5 py-1 uppercase tracking-wider;
+    box-shadow: 0 1px 0 hsl(var(--primary) / 0.4);
   }
+
   .container-news {
     @apply mx-auto w-full max-w-[1280px] px-3 sm:px-4 lg:px-6;
+  }
+
+  .section-heading {
+    @apply relative font-headline text-xl sm:text-2xl text-headline;
+  }
+
+  .section-heading::before {
+    content: '';
+    @apply absolute -left-3 top-1 bottom-1 w-1 bg-primary rounded-full;
+  }
+
+  .section-rule {
+    @apply relative flex items-center justify-between mb-5 pb-2.5 border-b-2 border-primary;
+  }
+
+  .card-elevate {
+    @apply transition-all duration-300;
+    transition-timing-function: var(--transition-smooth);
+  }
+  .card-elevate:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-2px);
+  }
+
+  .gradient-overlay {
+    background: var(--gradient-overlay);
+  }
+}
+
+@layer utilities {
+  .shadow-lead {
+    box-shadow: var(--shadow-lead);
+  }
+  .text-balance {
+    text-wrap: balance;
   }
 }
