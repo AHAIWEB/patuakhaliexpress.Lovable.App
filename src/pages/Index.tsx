@@ -6,6 +6,7 @@ import BreakingTicker from "@/components/BreakingTicker";
 import CategorySection from "@/components/CategorySection";
 import PostCard, { PostCardData } from "@/components/PostCard";
 import SidebarWidget from "@/components/SidebarWidget";
+import DivisionsTabs from "@/components/DivisionsTabs";
 import { Link } from "react-router-dom";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
