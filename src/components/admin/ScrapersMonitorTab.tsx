@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Play, RefreshCw, CheckCircle2, AlertCircle, Clock } from "lucide-react";
+import { Play, RefreshCw, CheckCircle2, AlertCircle, Clock, StopCircle, Zap } from "lucide-react";
 
 interface ScraperRow {
   id: string;
@@ -22,6 +22,10 @@ const ScrapersMonitorTab = () => {
   const [loading, setLoading] = useState(true);
   const [runningAll, setRunningAll] = useState(false);
   const [runningId, setRunningId] = useState<string | null>(null);
+  const [continuousMode, setContinuousMode] = useState(false);
+  const [batchStats, setBatchStats] = useState<{ batches: number; inserted: number }>({ batches: 0, inserted: 0 });
+  const continuousRef = useRef(false);
+  const timerRef = useRef<number | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -52,6 +56,52 @@ const ScrapersMonitorTab = () => {
       setRunningAll(false);
     }
   };
+
+  const stopContinuous = () => {
+    continuousRef.current = false;
+    setContinuousMode(false);
+    if (timerRef.current) {
+      window.clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    toast.info("কন্টিনিউয়াস মোড বন্ধ");
+  };
+
+  const runContinuous = async () => {
+    if (continuousRef.current) return stopContinuous();
+    continuousRef.current = true;
+    setContinuousMode(true);
+    setBatchStats({ batches: 0, inserted: 0 });
+    toast.success("কন্টিনিউয়াস ব্যাচ শুরু — queue=0 না হওয়া পর্যন্ত চলবে");
+
+    const tick = async () => {
+      if (!continuousRef.current) return;
+      try {
+        const { data, error } = await supabase.functions.invoke("run-scrapers", { body: {} });
+        if (error) throw error;
+        const processed = Number(data?.processed ?? 0);
+        const inserted = Number(data?.inserted ?? 0);
+        setBatchStats((s) => ({ batches: s.batches + 1, inserted: s.inserted + inserted }));
+        await load();
+        if (processed === 0) {
+          toast.success(`✓ Queue শেষ — মোট ${inserted} নতুন পোস্ট`);
+          stopContinuous();
+          return;
+        }
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "ব্যাচ ত্রুটি");
+      }
+      if (continuousRef.current) {
+        timerRef.current = window.setTimeout(tick, 30000);
+      }
+    };
+    tick();
+  };
+
+  useEffect(() => () => {
+    continuousRef.current = false;
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+  }, []);
 
   const runOne = async (id: string) => {
     setRunningId(id);
@@ -99,19 +149,34 @@ const ScrapersMonitorTab = () => {
       </section>
 
       <section className="bg-card border border-border p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-headline text-lg text-headline">স্ক্রেপার মনিটরিং</h2>
-          <div className="flex gap-2">
-            <Button onClick={load} variant="outline" size="sm">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <div>
+            <h2 className="font-headline text-lg text-headline">স্ক্রেপার মনিটরিং</h2>
+            {continuousMode && (
+              <p className="text-xs text-primary mt-1">
+                <Zap className="h-3 w-3 inline mr-1" />
+                কন্টিনিউয়াস চলছে — ব্যাচ {batchStats.batches}, নতুন পোস্ট {batchStats.inserted}
+              </p>
+            )}
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <Button onClick={load} variant="outline" size="sm" disabled={continuousMode}>
               <RefreshCw className="h-3.5 w-3.5 mr-1" /> রিফ্রেশ
             </Button>
-            <Button onClick={runAll} disabled={runningAll} size="sm">
+            <Button onClick={runAll} disabled={runningAll || continuousMode} size="sm" variant="outline">
               {runningAll ? (
                 <RefreshCw className="h-3.5 w-3.5 mr-1 animate-spin" />
               ) : (
                 <Play className="h-3.5 w-3.5 mr-1" />
               )}
-              সব চালান
+              একবার চালান
+            </Button>
+            <Button onClick={runContinuous} size="sm" variant={continuousMode ? "destructive" : "default"}>
+              {continuousMode ? (
+                <><StopCircle className="h-3.5 w-3.5 mr-1" /> থামান</>
+              ) : (
+                <><Zap className="h-3.5 w-3.5 mr-1" /> সব চালান (কন্টিনিউয়াস)</>
+              )}
             </Button>
           </div>
         </div>
