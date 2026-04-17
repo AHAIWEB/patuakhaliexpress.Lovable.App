@@ -144,7 +144,7 @@ const ScrapersMonitorTab = () => {
                             নিষ্ক্রিয়
                           </Badge>
                         ) : ok ? (
-                          <Badge className="bg-green-600 hover:bg-green-700 text-xs">
+                          <Badge className="bg-primary text-primary-foreground text-xs">
                             <CheckCircle2 className="h-3 w-3 mr-1" /> চলছে
                           </Badge>
                         ) : r.last_error ? (
