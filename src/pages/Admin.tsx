@@ -24,6 +24,7 @@ import SourcesTab from "@/components/admin/SourcesTab";
 import PostsTab from "@/components/admin/PostsTab";
 import HomeLayoutTab from "@/components/admin/HomeLayoutTab";
 import ScrapersMonitorTab from "@/components/admin/ScrapersMonitorTab";
+import SiteSettingsTab from "@/components/admin/SiteSettingsTab";
 
 interface Cat { id: string; name: string; slug: string; parent_id: string | null; }
 interface Source { id: string; name: string; }
@@ -258,8 +259,13 @@ const Admin = () => {
             <TabsTrigger value="geo">বিভাগ/জেলা</TabsTrigger>
             <TabsTrigger value="sources">সোর্স</TabsTrigger>
             <TabsTrigger value="layout">হোম লেআউট</TabsTrigger>
+            <TabsTrigger value="design">ডিজাইন</TabsTrigger>
             <TabsTrigger value="photocard">ফটোকার্ড</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="design" className="mt-4">
+            <SiteSettingsTab />
+          </TabsContent>
 
           <TabsContent value="posts" className="mt-4">
             <PostsTab />
