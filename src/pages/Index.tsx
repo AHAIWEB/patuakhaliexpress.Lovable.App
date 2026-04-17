@@ -3,14 +3,18 @@ import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BreakingTicker from "@/components/BreakingTicker";
-import CategorySection from "@/components/CategorySection";
-import PostCard, { PostCardData } from "@/components/PostCard";
-import SidebarWidget from "@/components/SidebarWidget";
-import DivisionsTabs from "@/components/DivisionsTabs";
+import { PostCardData } from "@/components/PostCard";
 import SEO from "@/components/SEO";
 import { Link } from "react-router-dom";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import {
+  HybridLayout,
+  MagazineLayout,
+  MinimalLayout,
+  BoldLayout,
+  type HomeLayoutProps,
+} from "@/components/home/HomeLayouts";
 
 interface HomeSection {
   id: string;
@@ -162,6 +166,39 @@ const Index = () => {
     },
   ];
 
+  const layoutProps: HomeLayoutProps = {
+    lead,
+    sideFeatured,
+    latest,
+    sections: sections.map((s) => ({
+      id: s.id,
+      title: s.title,
+      slug: s.slug,
+      posts: s.posts,
+      variant: (s.variant as "grid" | "list" | "hero") ?? "grid",
+    })),
+    showFeaturedBlock,
+    showDivisionsTabs: settings.show_divisions_tabs,
+    showLatestSection: settings.show_latest_section,
+    sentinelRef,
+    latestLoading,
+    siteName: settings.site_name,
+  };
+
+  const renderLayout = () => {
+    switch (settings.home_theme) {
+      case "magazine":
+        return <MagazineLayout {...layoutProps} />;
+      case "minimal":
+        return <MinimalLayout {...layoutProps} />;
+      case "bold":
+        return <BoldLayout {...layoutProps} />;
+      case "hybrid":
+      default:
+        return <HybridLayout {...layoutProps} />;
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEO
@@ -175,18 +212,7 @@ const Index = () => {
       {settings.show_breaking_ticker && <BreakingTicker />}
 
       <main className="flex-1 container-news py-5 sm:py-6">
-        {showFeaturedBlock ? (
-          <section className="grid gap-5 lg:grid-cols-3">
-            <div className="lg:col-span-2">
-              <PostCard post={lead} variant="lead" />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-              {sideFeatured.map((p) => (
-                <PostCard key={p.id} post={p} variant="compact" />
-              ))}
-            </div>
-          </section>
-        ) : !lead ? (
+        {!lead && (
           <section className="py-16 text-center">
             <h1 className="font-headline text-3xl sm:text-4xl text-headline mb-3">
               {settings.site_name}-এ স্বাগতম
@@ -202,43 +228,8 @@ const Index = () => {
               এডমিন লগইন
             </Link>
           </section>
-        ) : null}
-
-        <div className="grid gap-8 lg:grid-cols-[1fr_300px] mt-2">
-          <div className="min-w-0">
-            {settings.show_divisions_tabs && <DivisionsTabs />}
-            {sections.map((s) => (
-              <CategorySection
-                key={s.id}
-                title={s.title}
-                slug={s.slug}
-                posts={s.posts}
-                variant={(s.variant as "grid" | "list" | "hero") ?? "grid"}
-              />
-            ))}
-
-            {settings.show_latest_section && latest.length > 0 && (
-              <section className="py-6">
-                <div className="section-rule">
-                  <h2 className="font-headline text-xl sm:text-2xl text-headline inline-flex items-center gap-2">
-                    <span className="inline-block w-1.5 h-6 bg-primary" />
-                    সর্বশেষ সংবাদ
-                  </h2>
-                </div>
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                  {latest.map((p) => (
-                    <PostCard key={p.id} post={p} />
-                  ))}
-                </div>
-                <div ref={sentinelRef} className="h-10" />
-                {latestLoading && (
-                  <p className="text-center text-muted-foreground mt-4">লোড হচ্ছে...</p>
-                )}
-              </section>
-            )}
-          </div>
-          <SidebarWidget />
-        </div>
+        )}
+        {lead && renderLayout()}
       </main>
 
       <Footer />

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { applyThemeTokens, type ThemeKey } from "@/lib/themes";
 
 export interface SiteSettings {
+  home_theme: ThemeKey;
   primary_hue: number;
   primary_saturation: number;
   primary_lightness: number;
@@ -23,6 +25,7 @@ export interface SiteSettings {
 }
 
 const DEFAULTS: SiteSettings = {
+  home_theme: "hybrid",
   primary_hue: 354,
   primary_saturation: 78,
   primary_lightness: 46,
@@ -48,6 +51,8 @@ const subscribers = new Set<(s: SiteSettings) => void>();
 
 const apply = (s: SiteSettings) => {
   const root = document.documentElement;
+  // Apply theme presets first (background/foreground/card/etc), then user color overrides on top
+  applyThemeTokens(s.home_theme);
   root.style.setProperty("--primary", `${s.primary_hue} ${s.primary_saturation}% ${s.primary_lightness}%`);
   root.style.setProperty(
     "--primary-glow",
