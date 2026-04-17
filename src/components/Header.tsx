@@ -232,30 +232,23 @@ const Header = () => {
       </div>
 
       {/* Category nav (desktop) */}
-      <nav className="bg-primary text-primary-foreground hidden md:block">
+      <nav className={navWrapClass}>
         <div className="container-news flex items-center gap-1 overflow-x-auto">
-          <Link
-            to="/"
-            className="px-3 py-2.5 text-sm font-semibold hover:bg-[hsl(var(--primary-glow))] transition-colors whitespace-nowrap"
-          >
+          <Link to="/" className={navLinkClass}>
             হোম
           </Link>
           {topCats.map((c) => {
             const subs = childrenOf(c.id);
             if (subs.length === 0) {
               return (
-                <Link
-                  key={c.id}
-                  to={`/category/${c.slug}`}
-                  className="px-3 py-2.5 text-sm font-semibold hover:bg-[hsl(var(--primary-glow))] transition-colors whitespace-nowrap"
-                >
+                <Link key={c.id} to={`/category/${c.slug}`} className={navLinkClass}>
                   {c.name}
                 </Link>
               );
             }
             return (
               <DropdownMenu key={c.id}>
-                <DropdownMenuTrigger className="px-3 py-2.5 text-sm font-semibold hover:bg-[hsl(var(--primary-glow))] transition-colors whitespace-nowrap inline-flex items-center gap-1 outline-none">
+                <DropdownMenuTrigger className={`${navLinkClass} inline-flex items-center gap-1 outline-none`}>
                   {c.name} <ChevronDown className="h-3 w-3" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="bg-background z-50">
@@ -276,7 +269,7 @@ const Header = () => {
           {/* Geo dropdown */}
           {divisions.length > 0 && (
             <DropdownMenu>
-              <DropdownMenuTrigger className="px-3 py-2.5 text-sm font-semibold hover:bg-[hsl(var(--primary-glow))] transition-colors whitespace-nowrap inline-flex items-center gap-1 outline-none">
+              <DropdownMenuTrigger className={`${navLinkClass} inline-flex items-center gap-1 outline-none`}>
                 বিভাগ <ChevronDown className="h-3 w-3" />
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-background z-50 max-h-[70vh] overflow-y-auto">
