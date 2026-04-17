@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +33,7 @@ interface District {
 }
 
 const Header = () => {
+  const settings = useSiteSettings();
   const [categories, setCategories] = useState<Category[]>([]);
   const [divisions, setDivisions] = useState<Division[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
@@ -89,13 +91,23 @@ const Header = () => {
 
       {/* Logo */}
       <div className="container-news py-3 flex items-center justify-between gap-4">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="bg-primary text-primary-foreground font-headline text-xl sm:text-2xl px-3 py-1.5 leading-none">
-            পটুয়াখালী
-          </div>
-          <div className="font-headline text-xl sm:text-2xl text-headline leading-none">
-            এক্সপ্রেস
-          </div>
+        <Link to="/" className="flex items-center gap-2 min-w-0">
+          {settings.logo_url ? (
+            <img
+              src={settings.logo_url}
+              alt={settings.site_name}
+              className="h-10 sm:h-12 w-auto object-contain"
+            />
+          ) : (
+            <>
+              <div className="bg-primary text-primary-foreground font-headline text-xl sm:text-2xl px-3 py-1.5 leading-none">
+                পটুয়াখালী
+              </div>
+              <div className="font-headline text-xl sm:text-2xl text-headline leading-none">
+                এক্সপ্রেস
+              </div>
+            </>
+          )}
         </Link>
         <div className="hidden md:flex items-center gap-2">
           <Button variant="ghost" size="icon" aria-label="search">
