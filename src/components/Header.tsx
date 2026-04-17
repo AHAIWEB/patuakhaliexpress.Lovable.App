@@ -119,7 +119,7 @@ const Header = () => {
     districts.filter((d) => d.division_id === divId);
 
   return (
-    <header className="sticky top-0 z-40 bg-background border-b border-border shadow-sm">
+    <header className={headerClass}>
       {/* Top bar */}
       <div className="bg-[hsl(var(--headline))] text-primary-foreground text-xs">
         <div className="container-news flex items-center justify-between py-1.5">
