@@ -105,7 +105,7 @@ const CategoryPage = () => {
       )}
       <Header />
       <main className="flex-1 container-news py-6">
-        <h1 className="font-headline text-2xl sm:text-3xl text-headline inline-flex items-center gap-3 border-b-2 border-primary pb-2 mb-6">
+        <h1 className="cat-heading">
           <span className="inline-block w-1.5 h-7 bg-primary" />
           {name || "ক্যাটাগরি"}
         </h1>
