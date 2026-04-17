@@ -151,10 +151,16 @@ const Header = () => {
                         {d.bn_name}
                       </summary>
                       <div className="ml-4 border-l border-border">
+                        <Link
+                          to={`/division/${d.slug}`}
+                          className="px-3 py-1.5 block text-xs font-medium text-primary hover:bg-secondary"
+                        >
+                          সব {d.bn_name}
+                        </Link>
                         {districtsIn(d.id).map((dt) => (
                           <Link
                             key={dt.id}
-                            to={`/category/${dt.slug}`}
+                            to={`/district/${dt.slug}`}
                             className="px-3 py-1.5 block text-xs text-muted-foreground hover:bg-secondary"
                           >
                             • {dt.bn_name}
@@ -222,11 +228,13 @@ const Header = () => {
                 {divisions.map((d) => (
                   <div key={d.id}>
                     <DropdownMenuLabel className="text-primary">
-                      {d.bn_name}
+                      <Link to={`/division/${d.slug}`} className="hover:underline">
+                        {d.bn_name} →
+                      </Link>
                     </DropdownMenuLabel>
                     {districtsIn(d.id).slice(0, 8).map((dt) => (
                       <DropdownMenuItem key={dt.id} asChild>
-                        <Link to={`/category/${dt.slug}`} className="text-sm">
+                        <Link to={`/district/${dt.slug}`} className="text-sm">
                           {dt.bn_name}
                         </Link>
                       </DropdownMenuItem>

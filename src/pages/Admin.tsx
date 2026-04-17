@@ -23,6 +23,7 @@ import GeoTab from "@/components/admin/GeoTab";
 import SourcesTab from "@/components/admin/SourcesTab";
 import PostsTab from "@/components/admin/PostsTab";
 import HomeLayoutTab from "@/components/admin/HomeLayoutTab";
+import ScrapersMonitorTab from "@/components/admin/ScrapersMonitorTab";
 
 interface Cat { id: string; name: string; slug: string; parent_id: string | null; }
 interface Source { id: string; name: string; }
@@ -250,6 +251,7 @@ const Admin = () => {
         <Tabs defaultValue="posts">
           <TabsList className="flex-wrap h-auto">
             <TabsTrigger value="posts">পোস্ট</TabsTrigger>
+            <TabsTrigger value="monitor">মনিটরিং</TabsTrigger>
             <TabsTrigger value="scrapers">স্ক্রেপার</TabsTrigger>
             <TabsTrigger value="newpost">নতুন পোস্ট</TabsTrigger>
             <TabsTrigger value="categories">ক্যাটাগরি</TabsTrigger>
@@ -261,6 +263,10 @@ const Admin = () => {
 
           <TabsContent value="posts" className="mt-4">
             <PostsTab />
+          </TabsContent>
+
+          <TabsContent value="monitor" className="mt-4">
+            <ScrapersMonitorTab />
           </TabsContent>
 
           <TabsContent value="scrapers" className="space-y-6 mt-4">

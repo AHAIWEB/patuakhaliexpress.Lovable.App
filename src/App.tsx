@@ -11,6 +11,7 @@ import Auth from "./pages/Auth.tsx";
 import Admin from "./pages/Admin.tsx";
 import Photocard from "./pages/Photocard.tsx";
 import Gallery from "./pages/Gallery.tsx";
+import GeoPage from "./pages/GeoPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,9 @@ const App = () => (
           <Route path="/admin" element={<Admin />} />
           <Route path="/photocard" element={<Photocard />} />
           <Route path="/gallery" element={<Gallery />} />
+          <Route path="/division/:slug" element={<GeoPage level="division" />} />
+          <Route path="/district/:slug" element={<GeoPage level="district" />} />
+          <Route path="/upazila/:slug" element={<GeoPage level="upazila" />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
