@@ -95,13 +95,14 @@ export default function PostsTab() {
     let res;
     if (action === "delete") {
       res = await supabase.from("posts").delete().in("id", ids);
+    } else if (action === "publish") {
+      res = await supabase.from("posts").update({ is_published: true }).in("id", ids);
+    } else if (action === "unpublish") {
+      res = await supabase.from("posts").update({ is_published: false }).in("id", ids);
+    } else if (action === "feature") {
+      res = await supabase.from("posts").update({ is_featured: true }).in("id", ids);
     } else {
-      const patch: Record<string, boolean> =
-        action === "publish" ? { is_published: true }
-        : action === "unpublish" ? { is_published: false }
-        : action === "feature" ? { is_featured: true }
-        : { is_featured: false };
-      res = await supabase.from("posts").update(patch).in("id", ids);
+      res = await supabase.from("posts").update({ is_featured: false }).in("id", ids);
     }
     if (res.error) {
       toast.error(res.error.message);
