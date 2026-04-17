@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Clock } from "lucide-react";
+import { useEffect, useState } from "react";
 import { getPlaceholderImage } from "@/lib/placeholder";
 
 export interface PostCardData {
@@ -31,8 +32,57 @@ const formatTime = (iso: string) => {
   }
 };
 
+// Read current theme from <html data-theme="..."> so cards adapt automatically
+const useThemeKey = () => {
+  const [key, setKey] = useState<string>(() =>
+    typeof document !== "undefined"
+      ? document.documentElement.getAttribute("data-theme") ?? "hybrid"
+      : "hybrid",
+  );
+  useEffect(() => {
+    const root = document.documentElement;
+    const obs = new MutationObserver(() =>
+      setKey(root.getAttribute("data-theme") ?? "hybrid"),
+    );
+    obs.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+  return key;
+};
+
+// Per-theme card shell classes — applied to the default variant
+const cardShellFor = (theme: string) => {
+  switch (theme) {
+    case "magazine":
+      // flat, sharp, strong serif — borderless top, thin bottom rule
+      return "bg-card border-b-2 border-foreground/80 rounded-none shadow-none hover:opacity-90 transition-opacity";
+    case "minimal":
+      // borderless, lots of whitespace, no shadow
+      return "bg-transparent rounded-none shadow-none hover:opacity-80 transition-opacity";
+    case "bold":
+      // elevated dark cards, glow on hover
+      return "bg-card rounded-lg shadow-lg hover:shadow-[0_8px_30px_hsl(var(--accent)/0.35)] hover:-translate-y-0.5 transition-all";
+    case "masonry":
+      // pillowy rounded cards with soft shadow (Pinterest)
+      return "bg-card rounded-2xl shadow-sm hover:shadow-xl transition-shadow ring-1 ring-border/60";
+    case "classic":
+      // sharp, ruled, no shadow
+      return "bg-card rounded-none border border-border hover:border-foreground transition-colors";
+    case "hybrid":
+    default:
+      return "bg-card card-elevate rounded-sm";
+  }
+};
+
+const imageRoundFor = (theme: string) => {
+  if (theme === "masonry") return "rounded-t-2xl";
+  if (theme === "bold") return "rounded-t-lg";
+  return "";
+};
+
 const PostCard = ({ post, variant = "default" }: Props) => {
   const href = `/post/${post.slug}`;
+  const theme = useThemeKey();
 
   if (variant === "lead") {
     return (
@@ -73,7 +123,7 @@ const PostCard = ({ post, variant = "default" }: Props) => {
     return (
       <article className="group">
         <Link to={href} className="flex gap-3 items-start">
-          <div className="flex-shrink-0 w-24 sm:w-28 aspect-[4/3] bg-muted overflow-hidden rounded-sm">
+          <div className={`flex-shrink-0 w-24 sm:w-28 aspect-[4/3] bg-muted overflow-hidden ${theme === "masonry" ? "rounded-xl" : "rounded-sm"}`}>
             <img
               src={post.image_url || getPlaceholderImage(post.category?.slug, post.title)}
               alt={post.title}
@@ -98,7 +148,7 @@ const PostCard = ({ post, variant = "default" }: Props) => {
   if (variant === "wide") {
     return (
       <article className="group grid sm:grid-cols-[1fr_2fr] gap-4 pb-5 border-b border-border last:border-0">
-        <Link to={href} className="block aspect-[16/10] overflow-hidden bg-muted rounded-sm">
+        <Link to={href} className={`block aspect-[16/10] overflow-hidden bg-muted ${theme === "masonry" ? "rounded-xl" : "rounded-sm"}`}>
           <img
             src={post.image_url || getPlaceholderImage(post.category?.slug, post.title)}
             alt={post.title}
@@ -114,12 +164,12 @@ const PostCard = ({ post, variant = "default" }: Props) => {
             </Link>
           )}
           <Link to={href}>
-            <h3 className="font-headline text-lg sm:text-xl text-headline group-hover:text-primary leading-snug transition-colors text-balance">
+            <h3 className={`font-headline ${theme === "classic" ? "text-xl sm:text-2xl" : "text-lg sm:text-xl"} text-headline group-hover:text-primary leading-snug transition-colors text-balance`}>
               {post.title}
             </h3>
           </Link>
           {post.excerpt && (
-            <p className="text-sm text-muted-foreground mt-2 line-clamp-3 leading-relaxed">
+            <p className={`text-sm text-muted-foreground mt-2 line-clamp-3 leading-relaxed ${theme === "classic" ? "first-letter:text-3xl first-letter:font-headline first-letter:float-left first-letter:mr-1.5 first-letter:leading-none" : ""}`}>
               {post.excerpt}
             </p>
           )}
@@ -136,9 +186,9 @@ const PostCard = ({ post, variant = "default" }: Props) => {
   }
 
   return (
-    <article className="group bg-card card-elevate overflow-hidden">
+    <article className={`group overflow-hidden ${cardShellFor(theme)}`}>
       <Link to={href} className="block">
-        <div className="aspect-[16/10] overflow-hidden bg-muted relative">
+        <div className={`aspect-[16/10] overflow-hidden bg-muted relative ${imageRoundFor(theme)}`}>
           <img
             src={post.image_url || getPlaceholderImage(post.category?.slug, post.title)}
             alt={post.title}
@@ -152,8 +202,8 @@ const PostCard = ({ post, variant = "default" }: Props) => {
             </span>
           )}
         </div>
-        <div className="p-3">
-          <h3 className="font-headline text-base leading-snug text-headline group-hover:text-primary line-clamp-3 transition-colors text-balance">
+        <div className={theme === "minimal" ? "py-3" : "p-3"}>
+          <h3 className={`font-headline ${theme === "classic" ? "text-[1.05rem]" : "text-base"} leading-snug text-headline group-hover:text-primary line-clamp-3 transition-colors text-balance`}>
             {post.title}
           </h3>
           <div className="text-xs text-meta mt-2 flex items-center gap-2">
