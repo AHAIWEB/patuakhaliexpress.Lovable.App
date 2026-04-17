@@ -346,6 +346,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         processed: due.length,
+        queued: dueAll.length,
         inserted,
         errors: errors.slice(0, 10),
       }),
