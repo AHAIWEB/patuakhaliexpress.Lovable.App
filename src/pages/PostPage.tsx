@@ -150,7 +150,7 @@ const PostPage = () => {
               {post.category.name}
             </Link>
           )}
-          <h1 className="font-headline text-2xl sm:text-3xl md:text-4xl text-headline mt-3 leading-tight">
+          <h1 className="article-headline font-headline text-2xl sm:text-3xl md:text-4xl text-headline mt-3 leading-tight">
             {post.title}
           </h1>
           <div className="text-sm text-meta mt-3 flex flex-wrap items-center gap-2">
@@ -184,14 +184,14 @@ const PostPage = () => {
           )}
 
           {post.excerpt && (
-            <p className="text-lg text-muted-foreground mt-5 leading-relaxed font-medium">
+            <p className="article-lede text-lg text-muted-foreground mt-5 leading-relaxed font-medium">
               {post.excerpt}
             </p>
           )}
 
           {visibleContent && (
             <div className="relative">
-              <div className="prose prose-lg max-w-none mt-5 text-foreground whitespace-pre-line leading-relaxed">
+              <div className="article-prose max-w-none mt-5 text-foreground whitespace-pre-line">
                 {visibleContent}
               </div>
               {showPaywall && (
