@@ -39,16 +39,13 @@ const PostCard = ({ post, variant = "default" }: Props) => {
       <article className="group relative overflow-hidden shadow-lead">
         <Link to={href} className="block">
           <div className="relative aspect-[16/10] sm:aspect-[16/9] overflow-hidden bg-muted">
-            {post.image_url ? (
-              <img
-                src={post.image_url}
-                alt={post.title}
-                loading="eager"
-                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-              />
-            ) : (
-              <div className="h-full w-full bg-gradient-to-br from-muted to-secondary" />
-            )}
+            <img
+              src={post.image_url || getPlaceholderImage(post.category?.slug, post.title)}
+              alt={post.title}
+              loading="eager"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = getPlaceholderImage(post.category?.slug, post.title); }}
+              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+            />
             <div className="absolute inset-0 gradient-overlay" />
             <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 text-white">
               {post.category && (
@@ -77,16 +74,13 @@ const PostCard = ({ post, variant = "default" }: Props) => {
       <article className="group">
         <Link to={href} className="flex gap-3 items-start">
           <div className="flex-shrink-0 w-24 sm:w-28 aspect-[4/3] bg-muted overflow-hidden rounded-sm">
-            {post.image_url ? (
-              <img
-                src={post.image_url}
-                alt={post.title}
-                loading="lazy"
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-            ) : (
-              <div className="h-full w-full bg-gradient-to-br from-muted to-secondary" />
-            )}
+            <img
+              src={post.image_url || getPlaceholderImage(post.category?.slug, post.title)}
+              alt={post.title}
+              loading="lazy"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = getPlaceholderImage(post.category?.slug, post.title); }}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="font-headline text-sm sm:text-[0.95rem] leading-snug text-headline group-hover:text-primary line-clamp-3 transition-colors">
@@ -105,16 +99,13 @@ const PostCard = ({ post, variant = "default" }: Props) => {
     return (
       <article className="group grid sm:grid-cols-[1fr_2fr] gap-4 pb-5 border-b border-border last:border-0">
         <Link to={href} className="block aspect-[16/10] overflow-hidden bg-muted rounded-sm">
-          {post.image_url ? (
-            <img
-              src={post.image_url}
-              alt={post.title}
-              loading="lazy"
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-          ) : (
-            <div className="h-full w-full bg-gradient-to-br from-muted to-secondary" />
-          )}
+          <img
+            src={post.image_url || getPlaceholderImage(post.category?.slug, post.title)}
+            alt={post.title}
+            loading="lazy"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).src = getPlaceholderImage(post.category?.slug, post.title); }}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
         </Link>
         <div>
           {post.category && (
@@ -148,16 +139,13 @@ const PostCard = ({ post, variant = "default" }: Props) => {
     <article className="group bg-card card-elevate overflow-hidden">
       <Link to={href} className="block">
         <div className="aspect-[16/10] overflow-hidden bg-muted relative">
-          {post.image_url ? (
-            <img
-              src={post.image_url}
-              alt={post.title}
-              loading="lazy"
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-          ) : (
-            <div className="h-full w-full bg-gradient-to-br from-muted to-secondary" />
-          )}
+          <img
+            src={post.image_url || getPlaceholderImage(post.category?.slug, post.title)}
+            alt={post.title}
+            loading="lazy"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).src = getPlaceholderImage(post.category?.slug, post.title); }}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+          />
           {post.category && (
             <span className="absolute top-2 left-2 category-tag text-[10px] py-0.5">
               {post.category.name}
