@@ -220,6 +220,76 @@ async function fetchFirecrawlArticle(
 }
 
 // ---------- Main ----------
+async function processConfigs(supabase: any, configs: ScraperRow[], divMap: Map<string, string>) {
+  let inserted = 0;
+  for (const cfg of configs) {
+    try {
+      let items: ParsedItem[] = [];
+      if (cfg.method === "rss") {
+        items = await fetchRss(cfg.url);
+      } else {
+        items = await fetchFirecrawlList(cfg.url);
+      }
+      const divSlug = detectDivisionSlug(cfg.url);
+      const divisionId = divSlug ? divMap.get(divSlug) ?? null : null;
+
+      for (const item of items) {
+        if (!item.title || !item.link) continue;
+        if (!item.link.startsWith("http")) continue;
+        const { data: existing } = await supabase
+          .from("posts")
+          .select("id")
+          .eq("source_url", item.link)
+          .maybeSingle();
+        if (existing) continue;
+
+        let content: string | null = item.content ?? item.description ?? null;
+        let imageUrl: string | null = item.image ?? null;
+        const article = await fetchFirecrawlArticle(item.link);
+        if (article.content && article.content.length > (content?.length ?? 0)) {
+          content = article.content;
+        }
+        if (!imageUrl && article.image) imageUrl = article.image;
+
+        const slug = `${slugify(item.title)}-${Math.random().toString(36).slice(2, 7)}`;
+        const published = item.pubDate
+          ? new Date(item.pubDate).toISOString()
+          : new Date().toISOString();
+
+        const { error: insErr } = await supabase.from("posts").insert({
+          title: item.title,
+          slug,
+          excerpt: (item.description ?? content ?? "").slice(0, 280) || null,
+          content,
+          image_url: imageUrl,
+          source_url: item.link,
+          category_id: cfg.category_id,
+          source_id: cfg.source_id,
+          division_id: divisionId,
+          post_type: "auto",
+          is_published: true,
+          published_at: published,
+        });
+        if (!insErr) inserted++;
+        else console.error("insert error", insErr.message);
+      }
+
+      await supabase
+        .from("scraper_configs")
+        .update({ last_run_at: new Date().toISOString(), last_error: null })
+        .eq("id", cfg.id);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error(`scraper ${cfg.url} error:`, msg);
+      await supabase
+        .from("scraper_configs")
+        .update({ last_run_at: new Date().toISOString(), last_error: msg })
+        .eq("id", cfg.id);
+    }
+  }
+  console.log(`run-scrapers done: processed=${configs.length} inserted=${inserted}`);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -228,15 +298,16 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    // Parse body for optional config_id (manual single-run trigger)
     let onlyConfigId: string | null = null;
     let force = false;
-    let limit = 8; // process at most N configs per invocation to avoid timeout
+    let limit = 6;
+    let background = true;
     try {
       const body = await req.json();
       if (body?.config_id) onlyConfigId = String(body.config_id);
       if (body?.force) force = true;
       if (typeof body?.limit === "number") limit = Math.max(1, Math.min(20, body.limit));
+      if (body?.background === false) background = false;
     } catch {
       // ignore
     }
@@ -250,10 +321,7 @@ Deno.serve(async (req) => {
     const { data: configs, error: cfgErr } = await cfgQuery;
     if (cfgErr) throw cfgErr;
 
-    // Load divisions once for slug→id mapping
-    const { data: divs } = await supabase
-      .from("divisions")
-      .select("id,slug");
+    const { data: divs } = await supabase.from("divisions").select("id,slug");
     const divMap = new Map<string, string>();
     (divs ?? []).forEach((d: any) => divMap.set(d.slug, d.id));
 
@@ -264,92 +332,27 @@ Deno.serve(async (req) => {
       const elapsed = (now - new Date(c.last_run_at).getTime()) / 60000;
       return elapsed >= c.interval_minutes;
     });
-    // Process oldest-first, capped at limit
     const due = dueAll.slice(0, limit);
 
-    let inserted = 0;
-    const errors: string[] = [];
-
-    for (const cfg of due) {
-      try {
-        let items: ParsedItem[] = [];
-        if (cfg.method === "rss") {
-          items = await fetchRss(cfg.url);
-        } else {
-          items = await fetchFirecrawlList(cfg.url);
-        }
-
-        // Detect division from scraper URL (e.g., /divisions/dhaka)
-        const divSlug = detectDivisionSlug(cfg.url);
-        const divisionId = divSlug ? divMap.get(divSlug) ?? null : null;
-
-        for (const item of items) {
-          if (!item.title || !item.link) continue;
-          if (!item.link.startsWith("http")) continue;
-
-          // Dedupe by source_url
-          const { data: existing } = await supabase
-            .from("posts")
-            .select("id")
-            .eq("source_url", item.link)
-            .maybeSingle();
-          if (existing) continue;
-
-          // Always fetch full article via Firecrawl for full content + image fallback
-          let content: string | null = item.content ?? item.description ?? null;
-          let imageUrl: string | null = item.image ?? null;
-
-          const article = await fetchFirecrawlArticle(item.link);
-          if (article.content && article.content.length > (content?.length ?? 0)) {
-            content = article.content;
-          }
-          if (!imageUrl && article.image) imageUrl = article.image;
-
-          const slug = `${slugify(item.title)}-${Math.random().toString(36).slice(2, 7)}`;
-          const published = item.pubDate
-            ? new Date(item.pubDate).toISOString()
-            : new Date().toISOString();
-
-          const { error: insErr } = await supabase.from("posts").insert({
-            title: item.title,
-            slug,
-            excerpt: (item.description ?? content ?? "").slice(0, 280) || null,
-            content,
-            image_url: imageUrl,
-            source_url: item.link,
-            category_id: cfg.category_id,
-            source_id: cfg.source_id,
-            division_id: divisionId,
-            post_type: "auto",
-            is_published: true,
-            published_at: published,
-          });
-          if (!insErr) inserted++;
-          else console.error("insert error", insErr.message);
-        }
-
-        await supabase
-          .from("scraper_configs")
-          .update({ last_run_at: new Date().toISOString(), last_error: null })
-          .eq("id", cfg.id);
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        errors.push(`${cfg.url}: ${msg}`);
-        await supabase
-          .from("scraper_configs")
-          .update({ last_run_at: new Date().toISOString(), last_error: msg })
-          .eq("id", cfg.id);
-      }
+    // Run in background so HTTP returns fast (avoids client timeout)
+    if (background && !onlyConfigId) {
+      // @ts-ignore EdgeRuntime is provided by Supabase Edge Functions
+      EdgeRuntime.waitUntil(processConfigs(supabase, due, divMap));
+      return new Response(
+        JSON.stringify({
+          success: true,
+          accepted: due.length,
+          queued: dueAll.length,
+          message: "Processing in background. Check posts table or scraper_configs.last_run_at.",
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
+    // Sync mode (single config_id or background:false)
+    await processConfigs(supabase, due, divMap);
     return new Response(
-      JSON.stringify({
-        success: true,
-        processed: due.length,
-        queued: dueAll.length,
-        inserted,
-        errors: errors.slice(0, 10),
-      }),
+      JSON.stringify({ success: true, processed: due.length, queued: dueAll.length }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
@@ -358,6 +361,10 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ success: false, error: msg }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
+
     });
   }
 });
