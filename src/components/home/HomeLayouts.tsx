@@ -12,7 +12,7 @@ export interface HomeLayoutProps {
     title: string;
     slug: string;
     posts: PostCardData[];
-    variant: "grid" | "list" | "hero" | "web-story" | "opinion" | "mosaic" | "large-feature";
+    variant: import("@/components/CategorySection").SectionVariant;
   }>;
   showFeaturedBlock: boolean;
   showDivisionsTabs: boolean;
