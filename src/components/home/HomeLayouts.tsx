@@ -35,7 +35,7 @@ export const HybridLayout = (p: HomeLayoutProps) => (
       <div className="min-w-0">
         {p.showDivisionsTabs && <DivisionsTabs />}
         {p.sections.map((s) => (
-          <CategorySection key={s.id} title={s.title} slug={s.slug} posts={s.posts} variant={s.variant} />
+          <RenderSection key={s.id} section={s} />
         ))}
         {p.showLatestSection && p.latest.length > 0 && (
           <section className="py-6">
@@ -98,7 +98,7 @@ export const MagazineLayout = (p: HomeLayoutProps) => (
     )}
     {p.showDivisionsTabs && <DivisionsTabs />}
     {p.sections.map((s) => (
-      <CategorySection key={s.id} title={s.title} slug={s.slug} posts={s.posts} variant={s.variant} />
+      <RenderSection key={s.id} section={s} />
     ))}
     {p.showLatestSection && p.latest.length > 0 && (
       <section className="py-8 grid lg:grid-cols-[1fr_320px] gap-10">
@@ -171,7 +171,7 @@ export const MinimalLayout = (p: HomeLayoutProps) => (
     )}
     {p.showDivisionsTabs && <DivisionsTabs />}
     {p.sections.map((s) => (
-      <CategorySection key={s.id} title={s.title} slug={s.slug} posts={s.posts} variant={s.variant} />
+      <RenderSection key={s.id} section={s} />
     ))}
     {p.showLatestSection && p.latest.length > 0 && (
       <section className="py-12 max-w-5xl mx-auto">
@@ -247,7 +247,7 @@ export const BoldLayout = (p: HomeLayoutProps) => (
       <div className="min-w-0">
         {p.showDivisionsTabs && <DivisionsTabs />}
         {p.sections.map((s) => (
-          <CategorySection key={s.id} title={s.title} slug={s.slug} posts={s.posts} variant={s.variant} />
+          <RenderSection key={s.id} section={s} />
         ))}
         {p.showLatestSection && p.latest.length > 0 && (
           <section className="py-6">
@@ -352,7 +352,7 @@ export const ClassicLayout = (p: HomeLayoutProps) => (
     )}
     {p.showDivisionsTabs && <DivisionsTabs />}
     {p.sections.map((s) => (
-      <CategorySection key={s.id} title={s.title} slug={s.slug} posts={s.posts} variant={s.variant} />
+      <RenderSection key={s.id} section={s} />
     ))}
     {p.showLatestSection && p.latest.length > 0 && (
       <section className="py-8 grid lg:grid-cols-[1fr_300px] gap-8">
@@ -467,7 +467,7 @@ export const ProthomLayout = (p: HomeLayoutProps) => (
       <div className="min-w-0">
         {p.showDivisionsTabs && <DivisionsTabs />}
         {p.sections.map((s) => (
-          <CategorySection key={s.id} title={s.title} slug={s.slug} posts={s.posts} variant={s.variant} />
+          <RenderSection key={s.id} section={s} />
         ))}
         {p.showLatestSection && p.latest.length > 0 && (
           <section className="py-6">
