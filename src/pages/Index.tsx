@@ -29,6 +29,7 @@ interface HomeSection {
   variant: string;
   item_count: number;
   display_order: number;
+  config: any;
 }
 
 const PAGE_SIZE = 9;
@@ -65,7 +66,7 @@ const Index = () => {
         supabase
           .from("home_sections")
           .select(
-            "id,title,section_type,category_id,division_id,variant,item_count,display_order"
+            "id,title,section_type,category_id,division_id,variant,item_count,display_order,config"
           )
           .eq("is_visible", true)
           .order("display_order"),
@@ -78,6 +79,10 @@ const Index = () => {
 
       const builtSections = await Promise.all(
         (secs ?? []).map(async (s) => {
+          // Tabs variant manages its own data — skip post fetch
+          if (s.variant === "tabs") {
+            return { ...s, posts: [] as PostCardData[], slug: "" };
+          }
           let q = supabase
             .from("posts")
             .select(SELECT)
@@ -179,7 +184,9 @@ const Index = () => {
       title: s.title,
       slug: s.slug,
       posts: s.posts,
-      variant: (s.variant as SectionVariant) ?? "grid",
+      variant: (s.variant as any) ?? "grid",
+      config: s.config ?? null,
+      item_count: s.item_count,
     })),
     showFeaturedBlock,
     showDivisionsTabs: settings.show_divisions_tabs,
