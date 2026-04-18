@@ -61,7 +61,7 @@ const SectionPreview = ({ section }: { section: PreviewSection }) => {
           title={section.title}
           slug={catSlug}
           posts={posts}
-          variant={section.variant as "grid" | "list" | "hero"}
+          variant={section.variant as import("@/components/CategorySection").SectionVariant}
         />
       </div>
     </div>
