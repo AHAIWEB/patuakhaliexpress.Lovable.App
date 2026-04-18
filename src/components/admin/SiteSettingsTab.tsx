@@ -88,53 +88,160 @@ export default function SiteSettingsTab() {
             ৬টি ভিন্ন ডিজাইন — সিলেক্ট করলে হোম, ক্যাটাগরি, পোস্ট সব পেজে apply হবে
           </p>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {THEMES.map((t) => {
             const active = (s.home_theme ?? "hybrid") === t.key;
             const bg = t.tokens["--background"] ?? "0 0% 100%";
             const fg = t.tokens["--foreground"] ?? "220 15% 12%";
+            const card = t.tokens["--card"] ?? bg;
             const primary = t.tokens["--primary"] ?? "354 78% 46%";
             const accent = t.tokens["--accent"] ?? "38 92% 50%";
+            const border = t.tokens["--border"] ?? "220 13% 90%";
+            const radius = t.tokens["--radius"] ?? "0.375rem";
+            const headlineFont = t.fonts?.headline ?? "Hind Siliguri";
+
+            // Render different mini-mock per theme
+            const renderMock = () => {
+              const common = { background: `hsl(${bg})`, color: `hsl(${fg})`, fontFamily: headlineFont };
+              switch (t.key) {
+                case "magazine":
+                  return (
+                    <div className="aspect-[16/10] p-2.5 flex flex-col gap-1.5" style={common}>
+                      <div className="text-center border-y-2 py-1" style={{ borderColor: `hsl(${fg})` }}>
+                        <div className="text-[7px] tracking-[0.2em] font-bold uppercase" style={{ color: `hsl(${primary})` }}>Top Story</div>
+                        <div className="h-2 mx-auto mt-0.5 w-3/4 rounded-sm" style={{ background: `hsl(${fg} / 0.8)` }} />
+                      </div>
+                      <div className="grid grid-cols-3 gap-1 flex-1">
+                        <div className="rounded-sm" style={{ background: `hsl(${primary} / 0.25)` }} />
+                        <div className="rounded-sm" style={{ background: `hsl(${primary} / 0.15)` }} />
+                        <div className="rounded-sm" style={{ background: `hsl(${accent} / 0.3)` }} />
+                      </div>
+                    </div>
+                  );
+                case "minimal":
+                  return (
+                    <div className="aspect-[16/10] p-3 flex flex-col gap-2" style={common}>
+                      <div className="h-1.5 w-12 rounded-full" style={{ background: `hsl(${primary})` }} />
+                      <div className="space-y-1.5">
+                        <div className="h-1.5 w-full rounded-sm" style={{ background: `hsl(${fg} / 0.85)` }} />
+                        <div className="h-1.5 w-2/3 rounded-sm" style={{ background: `hsl(${fg} / 0.4)` }} />
+                      </div>
+                      <div className="flex-1 mt-1 grid grid-cols-2 gap-2">
+                        <div className="rounded-sm" style={{ background: `hsl(${fg} / 0.06)` }} />
+                        <div className="rounded-sm" style={{ background: `hsl(${fg} / 0.06)` }} />
+                      </div>
+                    </div>
+                  );
+                case "bold":
+                  return (
+                    <div className="aspect-[16/10] p-2.5 flex flex-col gap-1.5" style={common}>
+                      <div className="flex items-center gap-1">
+                        <div className="h-3 w-3 rounded-full" style={{ background: `hsl(${primary})` }} />
+                        <div className="h-2 w-10 uppercase rounded-sm" style={{ background: `hsl(${accent})` }} />
+                      </div>
+                      <div className="h-3 w-full rounded" style={{ background: `hsl(${primary} / 0.7)` }} />
+                      <div className="grid grid-cols-3 gap-1 flex-1">
+                        <div className="rounded shadow-md" style={{ background: `hsl(${card})`, border: `1px solid hsl(${border})` }} />
+                        <div className="rounded shadow-md" style={{ background: `hsl(${card})`, border: `1px solid hsl(${border})` }} />
+                        <div className="rounded shadow-md" style={{ background: `hsl(${accent} / 0.4)` }} />
+                      </div>
+                    </div>
+                  );
+                case "masonry":
+                  return (
+                    <div className="aspect-[16/10] p-2 grid grid-cols-3 gap-1.5" style={common}>
+                      <div className="rounded-xl row-span-2" style={{ background: `hsl(${primary} / 0.3)` }} />
+                      <div className="rounded-xl" style={{ background: `hsl(${accent} / 0.35)` }} />
+                      <div className="rounded-xl row-span-2" style={{ background: `hsl(${fg} / 0.12)` }} />
+                      <div className="rounded-xl" style={{ background: `hsl(${primary} / 0.18)` }} />
+                    </div>
+                  );
+                case "classic":
+                  return (
+                    <div className="aspect-[16/10] p-2 flex flex-col gap-1" style={common}>
+                      <div className="text-center border-y border-double py-0.5" style={{ borderColor: `hsl(${fg} / 0.7)` }}>
+                        <div className="font-serif italic text-[9px]" style={{ color: `hsl(${fg})` }}>The Daily</div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-1.5 flex-1 text-[6px] leading-tight">
+                        {[0,1,2].map(i => (
+                          <div key={i} className="space-y-0.5">
+                            <div className="h-1 rounded-sm" style={{ background: `hsl(${fg} / 0.7)` }} />
+                            <div className="h-0.5 rounded-sm" style={{ background: `hsl(${fg} / 0.3)` }} />
+                            <div className="h-0.5 rounded-sm" style={{ background: `hsl(${fg} / 0.3)` }} />
+                            <div className="h-0.5 rounded-sm" style={{ background: `hsl(${fg} / 0.3)` }} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                case "prothom":
+                  return (
+                    <div className="aspect-[16/10] p-2 flex flex-col gap-1" style={common}>
+                      <div className="flex items-center justify-between border-b pb-0.5" style={{ borderColor: `hsl(${primary})` }}>
+                        <div className="text-[8px] font-bold" style={{ color: `hsl(${primary})` }}>প্রথম</div>
+                        <div className="h-1 w-6 rounded-sm" style={{ background: `hsl(${fg} / 0.3)` }} />
+                      </div>
+                      <div className="grid grid-cols-3 gap-1 flex-1">
+                        <div className="col-span-2 rounded-sm" style={{ background: `hsl(${primary} / 0.2)` }} />
+                        <div className="space-y-0.5">
+                          <div className="h-1 rounded-sm" style={{ background: `hsl(${fg} / 0.5)` }} />
+                          <div className="h-1 rounded-sm" style={{ background: `hsl(${fg} / 0.3)` }} />
+                          <div className="h-1 rounded-sm" style={{ background: `hsl(${fg} / 0.3)` }} />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                default: // hybrid
+                  return (
+                    <div className="aspect-[16/10] p-2.5 flex flex-col gap-1.5" style={common}>
+                      <div className="flex items-center gap-1">
+                        <div className="h-2 w-2 rounded-full" style={{ background: `hsl(${primary})` }} />
+                        <div className="h-1.5 flex-1 rounded-sm" style={{ background: `hsl(${primary} / 0.5)` }} />
+                      </div>
+                      <div className="grid grid-cols-3 gap-1 flex-1">
+                        <div className="col-span-2 rounded-sm" style={{ background: `hsl(${primary} / 0.18)` }} />
+                        <div className="space-y-1">
+                          <div className="h-2 rounded-sm" style={{ background: `hsl(${accent} / 0.7)` }} />
+                          <div className="h-2 rounded-sm" style={{ background: `hsl(${fg} / 0.15)` }} />
+                          <div className="h-2 rounded-sm" style={{ background: `hsl(${fg} / 0.1)` }} />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-1">
+                        <div className="h-2.5 rounded-sm" style={{ background: `hsl(${fg} / 0.1)` }} />
+                        <div className="h-2.5 rounded-sm" style={{ background: `hsl(${fg} / 0.1)` }} />
+                        <div className="h-2.5 rounded-sm" style={{ background: `hsl(${fg} / 0.1)` }} />
+                      </div>
+                    </div>
+                  );
+              }
+            };
+
             return (
               <button
                 key={t.key}
                 type="button"
                 onClick={() => update({ home_theme: t.key })}
-                className={`relative text-left border-2 transition-all overflow-hidden rounded-md ${
-                  active ? "border-primary ring-2 ring-primary/30" : "border-border hover:border-primary/50"
+                className={`relative text-left border-2 transition-all overflow-hidden ${
+                  active ? "border-primary ring-2 ring-primary/30 shadow-lg" : "border-border hover:border-primary/50"
                 }`}
+                style={{ borderRadius: radius }}
               >
                 {active && (
-                  <span className="absolute top-2 right-2 z-10 h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                  <span className="absolute top-2 right-2 z-10 h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md">
                     <Check className="h-3.5 w-3.5" />
                   </span>
                 )}
-                {/* Mini preview */}
-                <div
-                  className="aspect-[16/10] p-3 flex flex-col gap-1.5"
-                  style={{ background: `hsl(${bg})`, color: `hsl(${fg})` }}
-                >
-                  <div className="flex items-center gap-1">
-                    <div className="h-2 w-2 rounded-full" style={{ background: `hsl(${primary})` }} />
-                    <div className="h-2 flex-1 rounded-sm" style={{ background: `hsl(${primary} / 0.6)` }} />
-                  </div>
-                  <div className="grid grid-cols-3 gap-1 flex-1">
-                    <div className="col-span-2 rounded-sm" style={{ background: `hsl(${primary} / 0.15)` }} />
-                    <div className="space-y-1">
-                      <div className="h-2 rounded-sm" style={{ background: `hsl(${accent} / 0.7)` }} />
-                      <div className="h-2 rounded-sm" style={{ background: `hsl(${fg} / 0.15)` }} />
-                      <div className="h-2 rounded-sm" style={{ background: `hsl(${fg} / 0.1)` }} />
+                {renderMock()}
+                <div className="p-2.5 bg-card border-t border-border">
+                  <div className="flex items-center justify-between gap-2 mb-0.5">
+                    <div className="font-headline text-sm text-headline">{t.name}</div>
+                    <div className="flex gap-0.5 shrink-0">
+                      <span className="h-3 w-3 rounded-full border border-border" style={{ background: `hsl(${primary})` }} />
+                      <span className="h-3 w-3 rounded-full border border-border" style={{ background: `hsl(${accent})` }} />
+                      <span className="h-3 w-3 rounded-full border border-border" style={{ background: `hsl(${bg})` }} />
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-1">
-                    <div className="h-3 rounded-sm" style={{ background: `hsl(${fg} / 0.1)` }} />
-                    <div className="h-3 rounded-sm" style={{ background: `hsl(${fg} / 0.1)` }} />
-                    <div className="h-3 rounded-sm" style={{ background: `hsl(${fg} / 0.1)` }} />
-                  </div>
-                </div>
-                <div className="p-2.5 bg-card border-t border-border">
-                  <div className="font-headline text-sm text-headline">{t.name}</div>
-                  <div className="text-[10px] text-muted-foreground line-clamp-2 mt-0.5">{t.description}</div>
+                  <div className="text-[10px] text-muted-foreground line-clamp-2">{t.description}</div>
                 </div>
               </button>
             );
