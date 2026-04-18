@@ -11,7 +11,9 @@ export type SectionVariant =
   | "web-story"
   | "opinion"
   | "mosaic"
-  | "large-feature";
+  | "large-feature"
+  | "numbered-list"
+  | "top-strip";
 
 interface Props {
   title: string;
