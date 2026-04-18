@@ -86,6 +86,8 @@ function SortableRow({
           <SelectItem value="opinion">মতামত/উদ্ধৃতি</SelectItem>
           <SelectItem value="mosaic">মোজাইক ১+৪</SelectItem>
           <SelectItem value="large-feature">বড় ফিচার</SelectItem>
+          <SelectItem value="numbered-list">নম্বরযুক্ত তালিকা ১-১০</SelectItem>
+          <SelectItem value="top-strip">টপ স্ট্রিপ (marquee)</SelectItem>
         </SelectContent>
       </Select>
       <Input
@@ -218,6 +220,8 @@ export default function HomeLayoutTab() {
                 <SelectItem value="opinion">মতামত/উদ্ধৃতি</SelectItem>
                 <SelectItem value="mosaic">মোজাইক ১+৪</SelectItem>
                 <SelectItem value="large-feature">বড় ফিচার</SelectItem>
+                <SelectItem value="numbered-list">নম্বরযুক্ত তালিকা ১-১০</SelectItem>
+                <SelectItem value="top-strip">টপ স্ট্রিপ (marquee)</SelectItem>
               </SelectContent>
             </Select>
           </div>
