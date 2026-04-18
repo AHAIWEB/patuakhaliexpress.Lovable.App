@@ -115,17 +115,19 @@ const CategorySection = ({ title, slug, posts, variant = "grid" }: Props) => {
 
   return (
     <section className="py-6">
-      <div className={headingWrap}>
-        {titleEl}
-        {variant !== "web-story" && theme !== "prothom" && (
-          <Link
-            to={href}
-            className="text-xs sm:text-sm text-primary font-semibold hover:underline inline-flex items-center gap-1"
-          >
-            সব দেখুন <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        )}
-      </div>
+      {variant !== "top-strip" && (
+        <div className={headingWrap}>
+          {titleEl}
+          {variant !== "web-story" && theme !== "prothom" && (
+            <Link
+              to={href}
+              className="text-xs sm:text-sm text-primary font-semibold hover:underline inline-flex items-center gap-1"
+            >
+              সব দেখুন <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          )}
+        </div>
+      )}
 
       {variant === "hero" ? (
         <div className="grid gap-5 lg:grid-cols-3">
