@@ -1,19 +1,13 @@
 import PostCard, { PostCardData } from "@/components/PostCard";
-import CategorySection from "@/components/CategorySection";
 import DivisionsTabs from "@/components/DivisionsTabs";
 import SidebarWidget from "@/components/SidebarWidget";
+import RenderSection, { type RenderableSection } from "@/components/home/RenderSection";
 
 export interface HomeLayoutProps {
   lead: PostCardData | undefined;
   sideFeatured: PostCardData[];
   latest: PostCardData[];
-  sections: Array<{
-    id: string;
-    title: string;
-    slug: string;
-    posts: PostCardData[];
-    variant: import("@/components/CategorySection").SectionVariant;
-  }>;
+  sections: RenderableSection[];
   showFeaturedBlock: boolean;
   showDivisionsTabs: boolean;
   showLatestSection: boolean;
