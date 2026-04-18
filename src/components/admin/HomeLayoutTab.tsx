@@ -77,11 +77,15 @@ function SortableRow({
         </div>
       </div>
       <Select value={s.variant} onValueChange={(v) => onUpdate(s.id, { variant: v })}>
-        <SelectTrigger className="w-24 h-8 text-xs"><SelectValue /></SelectTrigger>
+        <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
         <SelectContent>
           <SelectItem value="grid">গ্রিড</SelectItem>
           <SelectItem value="list">তালিকা</SelectItem>
           <SelectItem value="hero">হিরো</SelectItem>
+          <SelectItem value="web-story">ওয়েব স্টোরি</SelectItem>
+          <SelectItem value="opinion">মতামত/উদ্ধৃতি</SelectItem>
+          <SelectItem value="mosaic">মোজাইক ১+৪</SelectItem>
+          <SelectItem value="large-feature">বড় ফিচার</SelectItem>
         </SelectContent>
       </Select>
       <Input
@@ -210,6 +214,10 @@ export default function HomeLayoutTab() {
                 <SelectItem value="grid">গ্রিড</SelectItem>
                 <SelectItem value="list">তালিকা</SelectItem>
                 <SelectItem value="hero">হিরো</SelectItem>
+                <SelectItem value="web-story">ওয়েব স্টোরি (carousel)</SelectItem>
+                <SelectItem value="opinion">মতামত/উদ্ধৃতি</SelectItem>
+                <SelectItem value="mosaic">মোজাইক ১+৪</SelectItem>
+                <SelectItem value="large-feature">বড় ফিচার</SelectItem>
               </SelectContent>
             </Select>
           </div>

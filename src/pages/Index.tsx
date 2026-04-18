@@ -15,8 +15,10 @@ import {
   BoldLayout,
   MasonryLayout,
   ClassicLayout,
+  ProthomLayout,
   type HomeLayoutProps,
 } from "@/components/home/HomeLayouts";
+import type { SectionVariant } from "@/components/CategorySection";
 
 interface HomeSection {
   id: string;
@@ -177,7 +179,7 @@ const Index = () => {
       title: s.title,
       slug: s.slug,
       posts: s.posts,
-      variant: (s.variant as "grid" | "list" | "hero") ?? "grid",
+      variant: (s.variant as SectionVariant) ?? "grid",
     })),
     showFeaturedBlock,
     showDivisionsTabs: settings.show_divisions_tabs,
@@ -199,6 +201,8 @@ const Index = () => {
         return <MasonryLayout {...layoutProps} />;
       case "classic":
         return <ClassicLayout {...layoutProps} />;
+      case "prothom":
+        return <ProthomLayout {...layoutProps} />;
       case "hybrid":
       default:
         return <HybridLayout {...layoutProps} />;
