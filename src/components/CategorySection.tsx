@@ -270,6 +270,50 @@ const CategorySection = ({ title, slug, posts, variant = "grid" }: Props) => {
             </Link>
           ))}
         </div>
+      ) : variant === "numbered-list" ? (
+        <ol className="grid gap-2 sm:grid-cols-2">
+          {posts.slice(0, 10).map((p, i) => (
+            <li key={p.id}>
+              <Link
+                to={`/post/${p.slug}`}
+                className="group flex items-start gap-3 py-3 border-b border-border/60 hover:bg-muted/40 px-2 -mx-2 rounded transition-colors"
+              >
+                <span
+                  className={`font-headline text-3xl sm:text-4xl leading-none shrink-0 w-10 text-right ${
+                    i < 3 ? "text-primary" : "text-muted-foreground/50"
+                  }`}
+                >
+                  {i + 1}
+                </span>
+                <h3 className="font-headline text-sm sm:text-base text-headline leading-snug group-hover:text-primary transition-colors line-clamp-3 pt-0.5">
+                  {p.title}
+                </h3>
+              </Link>
+            </li>
+          ))}
+        </ol>
+      ) : variant === "top-strip" ? (
+        <div className="relative overflow-hidden bg-primary/5 border border-primary/20 rounded-md">
+          <div className="flex items-center">
+            <span className="shrink-0 bg-primary text-primary-foreground px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold uppercase tracking-wide">
+              {title}
+            </span>
+            <div className="relative flex-1 overflow-hidden">
+              <div className="flex gap-8 whitespace-nowrap py-2 px-4 animate-[marquee_40s_linear_infinite] hover:[animation-play-state:paused]">
+                {[...posts, ...posts].map((p, i) => (
+                  <Link
+                    key={`${p.id}-${i}`}
+                    to={`/post/${p.slug}`}
+                    className="text-sm hover:text-primary transition-colors inline-flex items-center gap-2"
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />
+                    {p.title}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       ) : (
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-2 lg:row-span-2">
