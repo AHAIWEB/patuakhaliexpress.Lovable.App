@@ -1,7 +1,7 @@
 // Home theme registry — defines the 4 available themes,
 // their visual tokens, fonts, and a short label for the admin picker.
 
-export type ThemeKey = "hybrid" | "magazine" | "minimal" | "bold" | "masonry" | "classic";
+export type ThemeKey = "hybrid" | "magazine" | "minimal" | "bold" | "masonry" | "classic" | "prothom";
 
 export interface ThemeDef {
   key: ThemeKey;
@@ -141,6 +141,27 @@ export const THEMES: ThemeDef[] = [
       "--radius": "0rem",
     },
     fonts: { headline: "Tiro Bangla", body: "Mina" },
+    cardStyle: "sharp",
+  },
+  {
+    key: "prothom",
+    name: "প্রথম আলো",
+    english: "Bengali Daily",
+    description: "প্রথম আলো-ধাঁচের পরিচ্ছন্ন গ্রিড — লাল accent, mixed-photo blocks, web-story carousel",
+    tokens: {
+      "--primary": "0 78% 48%",
+      "--primary-glow": "0 85% 58%",
+      "--accent": "0 78% 48%",
+      "--background": "0 0% 100%",
+      "--foreground": "220 12% 12%",
+      "--card": "0 0% 100%",
+      "--border": "220 13% 88%",
+      "--headline": "220 20% 8%",
+      "--muted": "220 14% 96%",
+      "--muted-foreground": "220 9% 40%",
+      "--radius": "0.25rem",
+    },
+    fonts: { headline: "Noto Serif Bengali", body: "Hind Siliguri" },
     cardStyle: "sharp",
   },
 ];

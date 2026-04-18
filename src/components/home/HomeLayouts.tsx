@@ -12,7 +12,7 @@ export interface HomeLayoutProps {
     title: string;
     slug: string;
     posts: PostCardData[];
-    variant: "grid" | "list" | "hero";
+    variant: "grid" | "list" | "hero" | "web-story" | "opinion" | "mosaic" | "large-feature";
   }>;
   showFeaturedBlock: boolean;
   showDivisionsTabs: boolean;
@@ -379,5 +379,122 @@ export const ClassicLayout = (p: HomeLayoutProps) => (
         <SidebarWidget />
       </section>
     )}
+  </>
+);
+
+/* ============== PROTHOM (Bengali daily — red accents, mixed grid + sidebar list) ============== */
+export const ProthomLayout = (p: HomeLayoutProps) => (
+  <>
+    {p.showFeaturedBlock && p.lead && (
+      <section className="grid lg:grid-cols-[1.6fr_1fr] gap-5 mb-6">
+        {/* Left: lead + 2 medium photos */}
+        <div className="space-y-4">
+          <a href={`/post/${p.lead.slug}`} className="group block">
+            {p.lead.image_url && (
+              <div className="aspect-[16/9] overflow-hidden rounded-md bg-muted">
+                <img
+                  src={p.lead.image_url}
+                  alt={p.lead.title}
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                />
+              </div>
+            )}
+            <h1 className="font-headline text-xl sm:text-2xl lg:text-3xl text-headline mt-3 leading-tight text-balance group-hover:text-primary transition-colors">
+              {p.lead.title}
+            </h1>
+            {p.lead.category && (
+              <span className="inline-block mt-2 text-xs text-primary font-semibold border-l-2 border-primary pl-2">
+                {p.lead.category.name}
+              </span>
+            )}
+          </a>
+          {p.sideFeatured.slice(0, 2).length > 0 && (
+            <div className="grid sm:grid-cols-2 gap-4 pt-3 border-t border-border">
+              {p.sideFeatured.slice(0, 2).map((post) => (
+                <a key={post.id} href={`/post/${post.slug}`} className="group block">
+                  {post.image_url && (
+                    <div className="aspect-[16/10] overflow-hidden rounded-md bg-muted mb-2">
+                      <img
+                        src={post.image_url}
+                        alt={post.title}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                  )}
+                  <h3 className="font-headline text-sm sm:text-base text-headline leading-snug group-hover:text-primary transition-colors line-clamp-3">
+                    {post.title}
+                  </h3>
+                  {post.category && (
+                    <span className="inline-block mt-1.5 text-[11px] text-primary border-l-2 border-primary pl-1.5">
+                      {post.category.name}
+                    </span>
+                  )}
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Right: vertical thumb-list (Prothom Alo right rail) */}
+        <aside className="divide-y divide-border border border-border rounded-md bg-card">
+          {p.sideFeatured.slice(2, 8).map((post) => (
+            <a
+              key={post.id}
+              href={`/post/${post.slug}`}
+              className="group flex items-start gap-3 p-3 hover:bg-muted/50 transition-colors"
+            >
+              <div className="flex-1 min-w-0">
+                <h3 className="font-headline text-sm leading-snug text-headline group-hover:text-primary transition-colors line-clamp-3">
+                  {post.title}
+                </h3>
+                {post.category && (
+                  <span className="inline-block mt-1.5 text-[11px] text-primary border-l-2 border-primary pl-1.5">
+                    {post.category.name}
+                  </span>
+                )}
+              </div>
+              {post.image_url && (
+                <div className="w-20 h-16 rounded-md overflow-hidden bg-muted shrink-0">
+                  <img
+                    src={post.image_url}
+                    alt={post.title}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              )}
+            </a>
+          ))}
+        </aside>
+      </section>
+    )}
+
+    <div className="grid gap-8 lg:grid-cols-[1fr_300px] mt-2">
+      <div className="min-w-0">
+        {p.showDivisionsTabs && <DivisionsTabs />}
+        {p.sections.map((s) => (
+          <CategorySection key={s.id} title={s.title} slug={s.slug} posts={s.posts} variant={s.variant} />
+        ))}
+        {p.showLatestSection && p.latest.length > 0 && (
+          <section className="py-6">
+            <div className="flex items-center justify-between mb-4 pb-2 border-b border-foreground/15">
+              <h2 className="font-headline text-lg sm:text-xl text-primary font-bold">
+                সর্বশেষ সংবাদ
+              </h2>
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {p.latest.map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))}
+            </div>
+            <div ref={p.sentinelRef} className="h-10" />
+            {p.latestLoading && (
+              <p className="text-center text-muted-foreground mt-4">লোড হচ্ছে...</p>
+            )}
+          </section>
+        )}
+      </div>
+      <SidebarWidget />
+    </div>
   </>
 );
