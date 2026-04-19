@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Quote, Play } from "lucide-react";
+import { ArrowRight, Quote, Play, ExternalLink } from "lucide-react";
 import PostCard, { PostCardData } from "./PostCard";
 import { useThemeKey } from "@/hooks/useThemeKey";
 import { getPlaceholderImage } from "@/lib/placeholder";
@@ -13,20 +13,92 @@ export type SectionVariant =
   | "mosaic"
   | "large-feature"
   | "numbered-list"
-  | "top-strip";
+  | "top-strip"
+  | "sponsored";
 
 interface Props {
   title: string;
   slug: string;
   posts: PostCardData[];
   variant?: SectionVariant;
+  icon?: string | null;
+  accentColor?: string | null;
 }
 
-const CategorySection = ({ title, slug, posts, variant = "grid" }: Props) => {
+// Validate hex/CSS color or hsl token; returns inline style if non-empty
+const accentStyle = (color?: string | null): React.CSSProperties | undefined => {
+  if (!color) return undefined;
+  return { backgroundColor: color };
+};
+
+const CategorySection = ({ title, slug, posts, variant = "grid", icon, accentColor }: Props) => {
   const theme = useThemeKey();
   if (!posts.length) return null;
   const [lead, ...rest] = posts;
   const href = slug ? `/category/${slug}` : "#";
+
+  // === SPONSORED — distinct border, label, external-link icons ===
+  if (variant === "sponsored") {
+    return (
+      <section className="py-6">
+        <div className="relative border-2 border-dashed border-muted-foreground/40 rounded-md p-4 sm:p-5 bg-muted/20">
+          <div className="absolute -top-2.5 left-4 bg-background px-2 text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">
+            বিজ্ঞাপন · Sponsored
+          </div>
+          <div className="flex items-center justify-between mb-4 mt-1">
+            <h2 className="font-headline text-lg sm:text-xl text-headline inline-flex items-center gap-2">
+              {icon && <span className="text-xl">{icon}</span>}
+              {accentColor && (
+                <span className="inline-block w-1.5 h-6 rounded-sm" style={accentStyle(accentColor)} />
+              )}
+              {title}
+            </h2>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {posts.slice(0, 6).map((p) => {
+              const isExternal = !!p.source?.name && /^https?:/i.test(p.image_url ?? "");
+              const Inner = (
+                <article className="group bg-card border border-border rounded p-3 hover:border-primary/40 transition-colors">
+                  <div className="aspect-[16/10] overflow-hidden bg-muted rounded mb-3">
+                    <img
+                      src={p.image_url || getPlaceholderImage(p.category?.slug, p.title)}
+                      alt={p.title}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                  <h3 className="font-headline text-sm leading-snug text-headline group-hover:text-primary line-clamp-3 inline-flex items-start gap-1.5">
+                    <span className="flex-1">{p.title}</span>
+                    <ExternalLink className="h-3.5 w-3.5 shrink-0 mt-0.5 opacity-60" />
+                  </h3>
+                  {p.source?.name && (
+                    <p className="text-[10px] text-muted-foreground mt-1.5 uppercase tracking-wide">
+                      {p.source.name}
+                    </p>
+                  )}
+                </article>
+              );
+              return isExternal ? (
+                <a
+                  key={p.id}
+                  href={p.image_url ?? "#"}
+                  target="_blank"
+                  rel="sponsored noopener noreferrer"
+                  className="block"
+                >
+                  {Inner}
+                </a>
+              ) : (
+                <Link key={p.id} to={`/post/${p.slug}`} className="block">
+                  {Inner}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   // Theme-specific section heading wrappers
   const headingWrap = (() => {
@@ -48,11 +120,26 @@ const CategorySection = ({ title, slug, posts, variant = "grid" }: Props) => {
     }
   })();
 
+  // Stripe + icon prefix shared across themes (when configured)
+  const accentPrefix = (
+    <>
+      {accentColor && (
+        <span
+          className="inline-block w-1.5 h-7 rounded-sm shrink-0"
+          style={accentStyle(accentColor)}
+          aria-hidden
+        />
+      )}
+      {icon && <span className="text-xl leading-none shrink-0">{icon}</span>}
+    </>
+  );
+
   const titleEl = (() => {
     switch (theme) {
       case "classic":
         return (
-          <h2 className="font-headline text-2xl sm:text-3xl text-headline italic">
+          <h2 className="font-headline text-2xl sm:text-3xl text-headline italic inline-flex items-center gap-2">
+            {accentPrefix}
             <Link to={href} className="hover:text-primary transition-colors">
               {title}
             </Link>
@@ -62,14 +149,19 @@ const CategorySection = ({ title, slug, posts, variant = "grid" }: Props) => {
         return (
           <h2 className="font-headline text-xl sm:text-2xl uppercase tracking-wide text-headline">
             <Link to={href} className="hover:text-primary transition-colors inline-flex items-center gap-2">
-              <span className="inline-block w-2 h-7 bg-gradient-to-b from-primary to-accent rounded-sm" />
+              {accentColor || icon ? (
+                accentPrefix
+              ) : (
+                <span className="inline-block w-2 h-7 bg-gradient-to-b from-primary to-accent rounded-sm" />
+              )}
               {title}
             </Link>
           </h2>
         );
       case "minimal":
         return (
-          <h2 className="font-headline text-lg sm:text-xl font-medium text-foreground/90">
+          <h2 className="font-headline text-lg sm:text-xl font-medium text-foreground/90 inline-flex items-center gap-2">
+            {accentPrefix}
             <Link to={href} className="hover:text-primary transition-colors">
               {title}
             </Link>
@@ -77,7 +169,8 @@ const CategorySection = ({ title, slug, posts, variant = "grid" }: Props) => {
         );
       case "magazine":
         return (
-          <h2 className="font-headline text-2xl sm:text-3xl text-headline">
+          <h2 className="font-headline text-2xl sm:text-3xl text-headline inline-flex items-center gap-2">
+            {accentPrefix}
             <Link to={href} className="hover:text-primary transition-colors uppercase tracking-tight">
               {title}
             </Link>
@@ -87,14 +180,23 @@ const CategorySection = ({ title, slug, posts, variant = "grid" }: Props) => {
         return (
           <h2 className="font-headline text-xl sm:text-2xl text-headline">
             <Link to={href} className="hover:text-primary transition-colors inline-flex items-center gap-2">
-              <span className="inline-block px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">●</span>
+              {accentColor ? (
+                <span className="inline-block w-1.5 h-6 rounded-sm" style={accentStyle(accentColor)} />
+              ) : (
+                <span className="inline-block px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">●</span>
+              )}
+              {icon && <span className="text-xl">{icon}</span>}
               {title}
             </Link>
           </h2>
         );
       case "prothom":
         return (
-          <h2 className="font-headline text-lg sm:text-xl text-primary font-bold">
+          <h2 className="font-headline text-lg sm:text-xl text-primary font-bold inline-flex items-center gap-2">
+            {accentColor && (
+              <span className="inline-block w-1.5 h-5 rounded-sm" style={accentStyle(accentColor)} />
+            )}
+            {icon && <span className="text-lg">{icon}</span>}
             <Link to={href} className="inline-flex items-center gap-1.5 hover:opacity-80">
               {title}
               <ArrowRight className="h-4 w-4" />
@@ -105,7 +207,12 @@ const CategorySection = ({ title, slug, posts, variant = "grid" }: Props) => {
         return (
           <h2 className="font-headline text-xl sm:text-2xl text-headline">
             <Link to={href} className="hover:text-primary transition-colors inline-flex items-center gap-2">
-              <span className="inline-block w-1.5 h-6 bg-primary" />
+              {accentColor ? (
+                <span className="inline-block w-1.5 h-6 rounded-sm" style={accentStyle(accentColor)} />
+              ) : (
+                <span className="inline-block w-1.5 h-6 bg-primary" />
+              )}
+              {icon && <span className="text-xl">{icon}</span>}
               {title}
             </Link>
           </h2>
@@ -297,7 +404,11 @@ const CategorySection = ({ title, slug, posts, variant = "grid" }: Props) => {
       ) : variant === "top-strip" ? (
         <div className="relative overflow-hidden bg-primary/5 border border-primary/20 rounded-md">
           <div className="flex items-center">
-            <span className="shrink-0 bg-primary text-primary-foreground px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold uppercase tracking-wide">
+            <span
+              className="shrink-0 text-primary-foreground px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold uppercase tracking-wide inline-flex items-center gap-1.5"
+              style={accentColor ? { backgroundColor: accentColor } : { backgroundColor: "hsl(var(--primary))" }}
+            >
+              {icon && <span>{icon}</span>}
               {title}
             </span>
             <div className="relative flex-1 overflow-hidden">

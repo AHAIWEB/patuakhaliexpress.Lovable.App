@@ -21,6 +21,8 @@ import { CSS } from "@dnd-kit/utilities";
 interface SectionConfig {
   bg_style?: "none" | "muted" | "accent-tint" | "primary-tint" | "dark";
   tab_category_ids?: string[];
+  icon?: string | null;
+  accent_color?: string | null;
 }
 
 interface Section {
@@ -50,6 +52,7 @@ const VARIANTS = [
   { value: "numbered-list", label: "নম্বরযুক্ত তালিকা ১-১০" },
   { value: "top-strip", label: "টপ স্ট্রিপ (marquee)" },
   { value: "tabs", label: "ট্যাবস (multi-category)" },
+  { value: "sponsored", label: "স্পনসর্ড / বিজ্ঞাপন" },
 ];
 
 const BG_STYLES = [
@@ -133,7 +136,7 @@ function SortableRow({
 
       {open && (
         <div className="border-t border-border p-3 bg-background/50 space-y-3">
-          <div className="grid sm:grid-cols-2 gap-3">
+          <div className="grid sm:grid-cols-3 gap-3">
             <div>
               <Label className="text-xs">ব্যাকগ্রাউন্ড স্টাইল</Label>
               <Select
@@ -147,6 +150,36 @@ function SortableRow({
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div>
+              <Label className="text-xs">আইকন / ইমোজি</Label>
+              <Input
+                value={config.icon ?? ""}
+                onChange={(e) => onUpdate(s.id, { config: { ...config, icon: e.target.value || null } })}
+                placeholder="🔥 ⚽ 🏛️ ..."
+                maxLength={4}
+                className="h-8 text-base text-center"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">অ্যাকসেন্ট কালার</Label>
+              <div className="flex gap-1.5 items-center">
+                <input
+                  type="color"
+                  value={config.accent_color ?? "#dc2626"}
+                  onChange={(e) => onUpdate(s.id, { config: { ...config, accent_color: e.target.value } })}
+                  className="h-8 w-10 rounded border border-border cursor-pointer bg-transparent"
+                />
+                {config.accent_color && (
+                  <button
+                    type="button"
+                    onClick={() => onUpdate(s.id, { config: { ...config, accent_color: null } })}
+                    className="text-xs text-muted-foreground hover:text-destructive"
+                  >
+                    মুছুন
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 

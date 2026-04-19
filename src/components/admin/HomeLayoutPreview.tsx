@@ -12,6 +12,10 @@ interface PreviewSection {
   variant: string;
   item_count: number;
   is_visible: boolean;
+  config?: {
+    icon?: string | null;
+    accent_color?: string | null;
+  } | null;
 }
 
 interface Props {
@@ -62,6 +66,8 @@ const SectionPreview = ({ section }: { section: PreviewSection }) => {
           slug={catSlug}
           posts={posts}
           variant={section.variant as import("@/components/CategorySection").SectionVariant}
+          icon={section.config?.icon ?? null}
+          accentColor={section.config?.accent_color ?? null}
         />
       </div>
     </div>

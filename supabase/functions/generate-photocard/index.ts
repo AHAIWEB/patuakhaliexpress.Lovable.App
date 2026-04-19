@@ -1,4 +1,4 @@
-// generate-photocard — accepts URL or raw text, generates Bengali quote + AI background
+// generate-photocard — dynamic AI photocard generator with multiple styles
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
@@ -8,6 +8,9 @@ const corsHeaders = {
 };
 
 const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+
+type CardStyle = "minimal" | "bold" | "classic" | "photo";
+type CardSize = "square" | "portrait" | "landscape";
 
 async function fetchText(url: string): Promise<string> {
   const fcKey = Deno.env.get("FIRECRAWL_API_KEY");
@@ -35,12 +38,95 @@ async function fetchText(url: string): Promise<string> {
   return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").slice(0, 8000);
 }
 
+const aspectFor = (size: CardSize) =>
+  size === "portrait" ? "3:4 portrait" : size === "landscape" ? "16:9 wide cinematic" : "1:1 square";
+
+function buildImagePrompt(opts: {
+  style: CardStyle;
+  size: CardSize;
+  quote: string;
+  detail?: string;
+  attribution?: string;
+  category?: string;
+  siteName?: string;
+  logoUrl?: string;
+}) {
+  const { style, size, quote, detail, attribution, category, siteName, logoUrl } = opts;
+  const aspect = aspectFor(size);
+
+  const parts: string[] = [];
+  parts.push(
+    `Generate a professionally designed Bengali (Bangla) news photocard image, ${aspect} aspect ratio.`,
+  );
+
+  // Style direction
+  switch (style) {
+    case "minimal":
+      parts.push(
+        "Style: clean editorial minimal — soft off-white or cream background, generous negative space, very thin elegant border, large centered Bengali quote in serif typography, small subtle category label at top.",
+      );
+      break;
+    case "bold":
+      parts.push(
+        "Style: bold magazine cover — vibrant gradient background (deep red to orange or purple to pink), large bold Bengali serif headline, accent color bar on the left, dramatic typography hierarchy, eye-catching for social media.",
+      );
+      break;
+    case "classic":
+      parts.push(
+        "Style: classic newspaper — cream/off-white textured paper background, double-rule horizontal lines above and below the quote, drop-cap first letter, traditional Bengali serif typography, vintage editorial feel.",
+      );
+      break;
+    case "photo":
+      parts.push(
+        "Style: photo-overlay — atmospheric blurred photographic background relevant to the topic, dark gradient overlay from bottom for legibility, white Bengali quote text overlaid centered or bottom-aligned.",
+      );
+      break;
+  }
+
+  // Content rendering
+  parts.push(
+    `Render this exact Bengali quotation prominently as the main text on the card: "${quote.replace(/"/g, '\\"')}".`,
+  );
+  if (detail) {
+    parts.push(`Below the quote, in smaller Bengali type, render this supporting detail: "${detail.slice(0, 180)}".`);
+  }
+  if (attribution) {
+    parts.push(`Render attribution in small italic Bengali text: "— ${attribution}".`);
+  }
+  if (category) {
+    parts.push(`Show a small category label at the top: "${category}".`);
+  }
+  if (siteName) {
+    parts.push(`Show the site name "${siteName}" subtly in a corner as a watermark/byline.`);
+  }
+  if (logoUrl) {
+    parts.push("Reserve a small clean square area in one corner for a logo overlay (the logo will be composited separately, leave background simple there).");
+  }
+  parts.push(
+    "Use authentic Bengali (Bangla) script — never Latin/English text for the quote. Typography must be legible, well-kerned, and high-contrast.",
+  );
+
+  return parts.join(" ");
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const body = await req.json();
-    const { url, text: rawText, quote: providedQuote, size = "square", category_id } = body ?? {};
+    const {
+      url,
+      text: rawText,
+      quote: providedQuote,
+      detail,
+      attribution,
+      category,
+      style = "minimal",
+      size = "square",
+      category_id,
+      site_name,
+      logo_url,
+    } = body ?? {};
 
     if (!url && !rawText && !providedQuote) {
       return new Response(
@@ -58,8 +144,9 @@ Deno.serve(async (req) => {
     }
 
     let quote: string = (providedQuote ?? "").trim();
+    let finalDetail: string = (detail ?? "").trim();
 
-    // If no manual quote, use AI to extract one from URL or raw text
+    // If no manual quote, AI extracts from URL or raw text
     if (!quote) {
       const sourceText = rawText?.trim()
         ? String(rawText).slice(0, 8000)
@@ -77,7 +164,7 @@ Deno.serve(async (req) => {
             {
               role: "system",
               content:
-                "You extract a single short, powerful Bengali quotation (max 25 words) summarizing the key point of a Bengali news article or text. Return ONLY the quotation text in Bengali, no quotes, no attribution.",
+                "You output JSON with two Bengali fields: \"quote\" (max 22 words, the most powerful headline-worthy line from the article) and \"detail\" (max 25 words, single-sentence supporting context). Return ONLY raw JSON like {\"quote\":\"...\",\"detail\":\"...\"} with no markdown, no code fences, no extra text.",
             },
             { role: "user", content: sourceText },
           ],
@@ -101,13 +188,28 @@ Deno.serve(async (req) => {
         throw new Error(`AI summarize failed ${summarize.status}: ${t.slice(0, 200)}`);
       }
       const sumData = await summarize.json();
-      quote = sumData?.choices?.[0]?.message?.content?.trim() ?? "সংবাদ থেকে কোটেশন";
+      const raw = sumData?.choices?.[0]?.message?.content?.trim() ?? "";
+      const cleaned = raw.replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+      try {
+        const parsed = JSON.parse(cleaned);
+        quote = String(parsed.quote ?? "").trim() || "সংবাদ থেকে কোটেশন";
+        if (!finalDetail) finalDetail = String(parsed.detail ?? "").trim();
+      } catch {
+        quote = cleaned || "সংবাদ থেকে কোটেশন";
+      }
     }
 
-    // Generate background image
-    const aspect =
-      size === "portrait" ? "3:4 portrait" : size === "landscape" ? "16:9 wide cinematic" : "1:1 square";
-    const imgPrompt = `A beautiful editorial news photocard background in ${aspect} aspect ratio. Subtle dark gradient, soft Bengali newspaper aesthetic, blurred warm tones, minimal abstract texture. NO text, NO words, NO letters in the image. Clean, suitable for overlaying a quote.`;
+    // Build image prompt
+    const imgPrompt = buildImagePrompt({
+      style: style as CardStyle,
+      size: size as CardSize,
+      quote,
+      detail: finalDetail,
+      attribution,
+      category,
+      siteName: site_name,
+      logoUrl: logo_url,
+    });
 
     const imgRes = await fetch(AI_URL, {
       method: "POST",
@@ -116,12 +218,24 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image",
+        model: "google/gemini-3.1-flash-image-preview",
         messages: [{ role: "user", content: imgPrompt }],
         modalities: ["image", "text"],
       }),
     });
 
+    if (imgRes.status === 429) {
+      return new Response(
+        JSON.stringify({ error: "AI rate limit exceeded. একটু পরে চেষ্টা করুন।" }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (imgRes.status === 402) {
+      return new Response(
+        JSON.stringify({ error: "AI credits শেষ। credits যোগ করুন।" }),
+        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
     if (!imgRes.ok) {
       const t = await imgRes.text();
       throw new Error(`AI image failed ${imgRes.status}: ${t.slice(0, 200)}`);
@@ -144,7 +258,7 @@ Deno.serve(async (req) => {
     });
 
     return new Response(
-      JSON.stringify({ success: true, image: imageUrl, quote }),
+      JSON.stringify({ success: true, image: imageUrl, quote, detail: finalDetail }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
