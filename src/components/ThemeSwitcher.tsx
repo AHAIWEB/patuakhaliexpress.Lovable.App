@@ -43,24 +43,48 @@ const ThemeSwitcher = () => {
             </button>
           </div>
           <div className="p-2 space-y-1">
-            {THEMES.map((t) => (
-              <button
-                key={t.key}
-                onClick={() => pick(t.key)}
-                className={`w-full text-left px-3 py-2 rounded-md flex items-start gap-2 hover:bg-muted transition-colors ${
-                  active === t.key ? "bg-muted" : ""
-                }`}
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm text-foreground">{t.name}</span>
-                    <span className="text-xs text-muted-foreground">{t.english}</span>
+            {THEMES.map((t) => {
+              const swatches = [
+                t.tokens["--background"],
+                t.tokens["--primary"],
+                t.tokens["--accent"],
+                t.tokens["--foreground"],
+              ].filter(Boolean) as string[];
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => pick(t.key)}
+                  className={`w-full text-left px-3 py-2 rounded-md flex items-start gap-3 hover:bg-muted transition-colors ${
+                    active === t.key ? "bg-muted ring-1 ring-primary/40" : ""
+                  }`}
+                >
+                  {/* Color swatch preview */}
+                  <div
+                    className="shrink-0 mt-0.5 grid grid-cols-2 gap-0.5 rounded-md overflow-hidden border border-border"
+                    style={{ width: 36, height: 36 }}
+                    aria-hidden="true"
+                  >
+                    {swatches.slice(0, 4).map((hsl, i) => (
+                      <div key={i} style={{ background: `hsl(${hsl})` }} />
+                    ))}
                   </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{t.description}</p>
-                </div>
-                {active === t.key && <Check className="h-4 w-4 text-primary shrink-0 mt-1" />}
-              </button>
-            ))}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm text-foreground">{t.name}</span>
+                      <span className="text-xs text-muted-foreground">{t.english}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{t.description}</p>
+                    {/* Linear strip for richer preview */}
+                    <div className="mt-1.5 flex h-1.5 w-full overflow-hidden rounded-full border border-border">
+                      {swatches.map((hsl, i) => (
+                        <div key={i} className="flex-1" style={{ background: `hsl(${hsl})` }} />
+                      ))}
+                    </div>
+                  </div>
+                  {active === t.key && <Check className="h-4 w-4 text-primary shrink-0 mt-1" />}
+                </button>
+              );
+            })}
           </div>
           {hasOverride && (
             <div className="p-3 border-t border-border">
