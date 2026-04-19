@@ -12,6 +12,8 @@ export interface RenderableSection {
   config?: {
     bg_style?: "none" | "muted" | "accent-tint" | "dark" | "primary-tint";
     tab_category_ids?: string[];
+    icon?: string | null;
+    accent_color?: string | null;
   } | null;
   item_count?: number;
 }
@@ -46,6 +48,8 @@ const RenderSection = ({ section }: { section: RenderableSection }) => {
         slug={section.slug}
         posts={section.posts}
         variant={section.variant as SectionVariant}
+        icon={section.config?.icon ?? null}
+        accentColor={section.config?.accent_color ?? null}
       />
     );
   if (!wrapper) return inner;
