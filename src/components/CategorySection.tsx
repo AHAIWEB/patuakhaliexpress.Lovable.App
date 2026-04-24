@@ -431,6 +431,163 @@ const CategorySection = ({ title, slug, posts, variant = "grid", icon, accentCol
             </div>
           </div>
         </div>
+      ) : variant === "cinematic" ? (
+        // Netflix-like cinematic dark band: large hero + film-strip thumbnails
+        <div className="relative -mx-4 sm:-mx-6 px-4 sm:px-6 py-8 bg-gradient-to-b from-foreground via-foreground/95 to-foreground text-background rounded-lg overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-2 film-strip opacity-90" />
+          <div className="absolute inset-x-0 bottom-0 h-2 film-strip opacity-90" />
+          <div className="grid gap-5 lg:grid-cols-5 items-center relative z-10">
+            <Link to={`/post/${lead.slug}`} className="group block lg:col-span-3 relative aspect-[16/9] overflow-hidden rounded-md">
+              <img
+                src={lead.image_url || getPlaceholderImage(lead.category?.slug, lead.title)}
+                alt={lead.title}
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 cinematic-overlay" />
+              <div className="absolute bottom-0 inset-x-0 p-5">
+                <span className="inline-block text-[10px] uppercase tracking-[0.2em] gold-accent font-bold mb-1.5">
+                  ▶ ফিচার্ড
+                </span>
+                <h3 className="font-headline text-xl sm:text-2xl lg:text-3xl text-white leading-tight line-clamp-3 text-balance">
+                  {lead.title}
+                </h3>
+              </div>
+            </Link>
+            <div className="lg:col-span-2 space-y-3">
+              {rest.slice(0, 4).map((p) => (
+                <Link key={p.id} to={`/post/${p.slug}`} className="group flex gap-3 items-start hover:bg-white/5 rounded p-2 -mx-2 transition-colors">
+                  <div className="h-16 w-24 shrink-0 overflow-hidden rounded bg-background/10">
+                    <img
+                      src={p.image_url || getPlaceholderImage(p.category?.slug, p.title)}
+                      alt={p.title}
+                      loading="lazy"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <h4 className="font-headline text-sm text-white leading-snug line-clamp-3 group-hover:gold-accent transition-colors">
+                    {p.title}
+                  </h4>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : variant === "magazine-collage" ? (
+        // Vogue-style asymmetric editorial collage
+        <div className="grid gap-3 sm:gap-4 grid-cols-6 grid-rows-2 lg:h-[520px] auto-rows-[180px] sm:auto-rows-auto">
+          <Link
+            to={`/post/${lead.slug}`}
+            className="group relative col-span-6 sm:col-span-4 row-span-2 overflow-hidden rounded-lg bg-muted"
+          >
+            <img
+              src={lead.image_url || getPlaceholderImage(lead.category?.slug, lead.title)}
+              alt={lead.title}
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+            <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-7">
+              {lead.category && (
+                <span className="text-[11px] uppercase tracking-[0.25em] text-white/90 font-bold mb-2">
+                  {lead.category.name}
+                </span>
+              )}
+              <h3 className="font-headline text-white text-xl sm:text-3xl lg:text-4xl leading-[1.05] tracking-tight line-clamp-4 text-balance">
+                {lead.title}
+              </h3>
+            </div>
+          </Link>
+          {rest.slice(0, 2).map((p, i) => (
+            <Link
+              key={p.id}
+              to={`/post/${p.slug}`}
+              className={`group relative col-span-3 sm:col-span-2 overflow-hidden rounded-lg bg-muted ${
+                i === 0 ? "" : ""
+              }`}
+            >
+              <img
+                src={p.image_url || getPlaceholderImage(p.category?.slug, p.title)}
+                alt={p.title}
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 p-3">
+                <h4 className="font-headline text-sm sm:text-base text-white leading-snug line-clamp-3">
+                  {p.title}
+                </h4>
+              </div>
+            </Link>
+          ))}
+        </div>
+      ) : variant === "neon-glass" ? (
+        // Modern glass + neon: glowing card grid
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 rounded-xl pointer-events-none" />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 relative">
+            {posts.slice(0, 6).map((p, i) => (
+              <Link
+                key={p.id}
+                to={`/post/${p.slug}`}
+                className="group glass-card rounded-xl p-3 hover:neon-glow transition-shadow duration-500"
+              >
+                <div className="relative aspect-[16/10] overflow-hidden rounded-lg mb-3">
+                  <img
+                    src={p.image_url || getPlaceholderImage(p.category?.slug, p.title)}
+                    alt={p.title}
+                    loading="lazy"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  {i === 0 && (
+                    <span className="absolute top-2 left-2 text-[10px] px-2 py-0.5 rounded-full bg-primary/90 text-primary-foreground font-bold uppercase tracking-wider">
+                      ✨ ট্রেন্ডিং
+                    </span>
+                  )}
+                </div>
+                {p.category && (
+                  <span className="text-[10px] uppercase tracking-wider text-primary font-semibold">
+                    {p.category.name}
+                  </span>
+                )}
+                <h3 className="font-headline text-sm sm:text-base text-headline leading-snug line-clamp-3 mt-1 group-hover:text-primary transition-colors">
+                  {p.title}
+                </h3>
+              </Link>
+            ))}
+          </div>
+        </div>
+      ) : variant === "polaroid" ? (
+        // Tilted polaroid horizontal scroll
+        <div className="-mx-4 sm:mx-0 px-4 sm:px-0 overflow-x-auto scrollbar-thin">
+          <div className="flex gap-5 sm:gap-7 pb-6 pt-3 snap-x">
+            {posts.map((p, i) => (
+              <Link
+                key={p.id}
+                to={`/post/${p.slug}`}
+                className={`snap-start flex-shrink-0 w-[60%] sm:w-[36%] lg:w-[22%] bg-card border border-border shadow-md hover:shadow-xl p-3 pb-4 transition-all hover:-translate-y-1 ${
+                  i % 2 === 0 ? "rotate-[-1.5deg]" : "rotate-[1.5deg]"
+                } hover:rotate-0`}
+                style={{ borderRadius: "2px" }}
+              >
+                <div className="aspect-square overflow-hidden bg-muted mb-3">
+                  <img
+                    src={p.image_url || getPlaceholderImage(p.category?.slug, p.title)}
+                    alt={p.title}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <h3 className="font-headline text-sm text-headline leading-snug line-clamp-2 text-center px-1">
+                  {p.title}
+                </h3>
+                {p.category && (
+                  <p className="text-[10px] text-center text-muted-foreground italic mt-1">
+                    — {p.category.name}
+                  </p>
+                )}
+              </Link>
+            ))}
+          </div>
+        </div>
       ) : (
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-2 lg:row-span-2">
