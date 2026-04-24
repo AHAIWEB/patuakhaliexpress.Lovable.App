@@ -14,6 +14,7 @@ export interface RenderableSection {
     tab_category_ids?: string[];
     icon?: string | null;
     accent_color?: string | null;
+    card_style?: "default" | "editorial" | "boxed" | "visual";
   } | null;
   item_count?: number;
 }
@@ -41,6 +42,7 @@ const RenderSection = ({ section }: { section: RenderableSection }) => {
         title={section.title}
         categoryIds={section.config?.tab_category_ids ?? []}
         itemCount={section.item_count ?? 6}
+        cardStyle={section.config?.card_style ?? "visual"}
       />
     ) : (
       <CategorySection
