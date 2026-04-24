@@ -25,6 +25,7 @@ import PostsTab from "@/components/admin/PostsTab";
 import HomeLayoutTab from "@/components/admin/HomeLayoutTab";
 import ScrapersMonitorTab from "@/components/admin/ScrapersMonitorTab";
 import SiteSettingsTab from "@/components/admin/SiteSettingsTab";
+import PhotocardModal from "@/components/PhotocardModal";
 
 interface Cat { id: string; name: string; slug: string; parent_id: string | null; }
 interface Source { id: string; name: string; }
@@ -58,6 +59,8 @@ const Admin = () => {
   const [upazilas, setUpazilas] = useState<Upazila[]>([]);
   const [scrapers, setScrapers] = useState<ScraperConfig[]>([]);
   const [running, setRunning] = useState(false);
+  const [photocardOpen, setPhotocardOpen] = useState(false);
+  const [photocardRefreshKey, setPhotocardRefreshKey] = useState(0);
 
   // Manual post
   const [pTitle, setPTitle] = useState("");
@@ -429,12 +432,30 @@ const Admin = () => {
           <TabsContent value="layout" className="mt-4"><HomeLayoutTab /></TabsContent>
 
           <TabsContent value="photocard" className="mt-4">
-            <section className="bg-card border border-border p-5">
-              <p className="text-sm">
-                ফটোকার্ড জেনারেটর{" "}
-                <a href="/photocard" className="text-primary hover:underline">/photocard</a>{" "}
-                পেজে যান। অথবা যেকোনো পোস্ট পেজে "ফটোকার্ড বানান" বাটন।
-              </p>
+            <section className="bg-card border border-border p-5 space-y-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="font-headline text-lg text-headline">AI ফটোকার্ড</h2>
+                  <p className="text-sm text-muted-foreground">এডমিন প্যানেল থেকেই ফটোকার্ড জেনারেট ও সর্বশেষ আপডেট দেখুন।</p>
+                </div>
+                <Button onClick={() => setPhotocardOpen(true)}>নতুন ফটোকার্ড বানান</Button>
+              </div>
+              <div className="rounded-md border border-border bg-muted/20 p-4">
+                <p className="text-sm text-muted-foreground">
+                  ছবি, কোটেশন, ইনফোগ্রাফিক—সব মোড এই প্যানেলের জেনারেটরে পাওয়া যাবে।
+                </p>
+              </div>
+              <iframe
+                key={photocardRefreshKey}
+                src="/gallery"
+                title="Photocard gallery"
+                className="h-[72vh] w-full rounded-md border border-border bg-background"
+              />
+              <PhotocardModal
+                open={photocardOpen}
+                onOpenChange={setPhotocardOpen}
+                onGenerated={() => setPhotocardRefreshKey((v) => v + 1)}
+              />
             </section>
           </TabsContent>
         </Tabs>
