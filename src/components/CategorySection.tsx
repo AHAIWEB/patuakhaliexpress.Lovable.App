@@ -27,6 +27,7 @@ interface Props {
   variant?: SectionVariant;
   icon?: string | null;
   accentColor?: string | null;
+  cardStyle?: "default" | "editorial" | "boxed" | "visual";
 }
 
 // Validate hex/CSS color or hsl token; returns inline style if non-empty
@@ -35,7 +36,7 @@ const accentStyle = (color?: string | null): React.CSSProperties | undefined => 
   return { backgroundColor: color };
 };
 
-const CategorySection = ({ title, slug, posts, variant = "grid", icon, accentColor }: Props) => {
+const CategorySection = ({ title, slug, posts, variant = "grid", icon, accentColor, cardStyle = "default" }: Props) => {
   const theme = useThemeKey();
   if (!posts.length) return null;
   const [lead, ...rest] = posts;
@@ -586,6 +587,42 @@ const CategorySection = ({ title, slug, posts, variant = "grid", icon, accentCol
                 )}
               </Link>
             ))}
+          </div>
+        </div>
+      ) : cardStyle === "editorial" ? (
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
+          <PostCard post={lead} variant="lead" />
+          <div className="space-y-4">
+            {rest.slice(0, 4).map((p) => (
+              <PostCard key={p.id} post={p} variant="compact" />
+            ))}
+          </div>
+        </div>
+      ) : cardStyle === "boxed" ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="rounded-md border border-border bg-card p-2 sm:col-span-2 lg:col-span-2">
+            <PostCard post={lead} variant="lead" />
+          </div>
+          {rest.slice(0, 4).map((p) => (
+            <div key={p.id} className="rounded-md border border-border bg-card p-2">
+              <PostCard post={p} />
+            </div>
+          ))}
+        </div>
+      ) : cardStyle === "visual" ? (
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <PostCard post={lead} variant="lead" />
+            {rest.slice(0, 3).map((p) => (
+              <PostCard key={p.id} post={p} />
+            ))}
+          </div>
+          <div className="rounded-md border border-border bg-muted/20 p-3">
+            <div className="space-y-3">
+              {rest.slice(3, 7).map((p) => (
+                <PostCard key={p.id} post={p} variant="compact" />
+              ))}
+            </div>
           </div>
         </div>
       ) : (
