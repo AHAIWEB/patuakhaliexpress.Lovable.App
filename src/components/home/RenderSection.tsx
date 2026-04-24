@@ -52,6 +52,7 @@ const RenderSection = ({ section }: { section: RenderableSection }) => {
         variant={section.variant as SectionVariant}
         icon={section.config?.icon ?? null}
         accentColor={section.config?.accent_color ?? null}
+        cardStyle={section.config?.card_style ?? "default"}
       />
     );
   if (!wrapper) return inner;
