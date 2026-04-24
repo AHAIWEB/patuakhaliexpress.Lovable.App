@@ -23,6 +23,7 @@ interface SectionConfig {
   tab_category_ids?: string[];
   icon?: string | null;
   accent_color?: string | null;
+  card_style?: "default" | "editorial" | "boxed" | "visual";
 }
 
 interface Section {
@@ -65,6 +66,13 @@ const BG_STYLES = [
   { value: "accent-tint", label: "Accent টিন্ট" },
   { value: "primary-tint", label: "Primary টিন্ট" },
   { value: "dark", label: "ডার্ক ব্যান্ড" },
+];
+
+const CARD_STYLES = [
+  { value: "default", label: "ডিফল্ট গ্রিড" },
+  { value: "editorial", label: "এডিটোরিয়াল" },
+  { value: "boxed", label: "বক্সড" },
+  { value: "visual", label: "ভিজ্যুয়াল স্প্লিট" },
 ];
 
 function SortableRow({
@@ -184,6 +192,20 @@ function SortableRow({
                   </button>
                 )}
               </div>
+            </div>
+            <div>
+              <Label className="text-xs">কার্ড লেআউট স্টাইল</Label>
+              <Select
+                value={config.card_style ?? "default"}
+                onValueChange={(v) => onUpdate(s.id, { config: { ...config, card_style: v as SectionConfig["card_style"] } })}
+              >
+                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {CARD_STYLES.map((style) => (
+                    <SelectItem key={style.value} value={style.value}>{style.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

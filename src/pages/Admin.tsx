@@ -25,6 +25,7 @@ import PostsTab from "@/components/admin/PostsTab";
 import HomeLayoutTab from "@/components/admin/HomeLayoutTab";
 import ScrapersMonitorTab from "@/components/admin/ScrapersMonitorTab";
 import SiteSettingsTab from "@/components/admin/SiteSettingsTab";
+import PhotocardModal from "@/components/PhotocardModal";
 
 interface Cat { id: string; name: string; slug: string; parent_id: string | null; }
 interface Source { id: string; name: string; }
@@ -43,6 +44,14 @@ interface ScraperConfig {
   category: { name: string } | null;
 }
 
+interface PhotocardItem {
+  id: string;
+  image_url: string | null;
+  quote: string | null;
+  source_url: string | null;
+  created_at: string;
+}
+
 const slugify = (s: string) =>
   s.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9-\u0980-\u09FF]/g, "").slice(0, 80) ||
   `post-${Date.now()}`;
@@ -58,6 +67,8 @@ const Admin = () => {
   const [upazilas, setUpazilas] = useState<Upazila[]>([]);
   const [scrapers, setScrapers] = useState<ScraperConfig[]>([]);
   const [running, setRunning] = useState(false);
+  const [photocardOpen, setPhotocardOpen] = useState(false);
+  const [photocards, setPhotocards] = useState<PhotocardItem[]>([]);
 
   // Manual post
   const [pTitle, setPTitle] = useState("");
@@ -103,7 +114,7 @@ const Admin = () => {
   }, [navigate]);
 
   const loadAll = async () => {
-    const [cats, srcs, scs, dv, ds, up] = await Promise.all([
+    const [cats, srcs, scs, dv, ds, up, pcs] = await Promise.all([
       supabase.from("categories").select("id,name,slug,parent_id").order("display_order"),
       supabase.from("sources").select("id,name").order("name"),
       supabase
@@ -115,6 +126,7 @@ const Admin = () => {
       supabase.from("divisions").select("id,bn_name").order("display_order"),
       supabase.from("districts").select("id,bn_name,division_id").order("display_order"),
       supabase.from("upazilas").select("id,bn_name,district_id").order("display_order"),
+      supabase.from("photocards").select("id,image_url,quote,source_url,created_at").order("created_at", { ascending: false }).limit(12),
     ]);
     setCategories(cats.data ?? []);
     setSources(srcs.data ?? []);
@@ -122,6 +134,7 @@ const Admin = () => {
     setDivisions(dv.data ?? []);
     setDistricts(ds.data ?? []);
     setUpazilas(up.data ?? []);
+    setPhotocards((pcs.data as PhotocardItem[]) ?? []);
   };
 
   const makeMeAdmin = async () => {
@@ -429,12 +442,54 @@ const Admin = () => {
           <TabsContent value="layout" className="mt-4"><HomeLayoutTab /></TabsContent>
 
           <TabsContent value="photocard" className="mt-4">
-            <section className="bg-card border border-border p-5">
-              <p className="text-sm">
-                ফটোকার্ড জেনারেটর{" "}
-                <a href="/photocard" className="text-primary hover:underline">/photocard</a>{" "}
-                পেজে যান। অথবা যেকোনো পোস্ট পেজে "ফটোকার্ড বানান" বাটন।
-              </p>
+            <section className="bg-card border border-border p-5 space-y-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="font-headline text-lg text-headline">AI ফটোকার্ড</h2>
+                  <p className="text-sm text-muted-foreground">এডমিন প্যানেল থেকেই ফটোকার্ড জেনারেট ও সর্বশেষ আপডেট দেখুন।</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={loadAll}>
+                    <RefreshCw className="mr-2 h-4 w-4" /> রিফ্রেশ
+                  </Button>
+                  <Button onClick={() => setPhotocardOpen(true)}>নতুন ফটোকার্ড বানান</Button>
+                </div>
+              </div>
+              <div className="rounded-md border border-border bg-muted/20 p-4 text-sm text-muted-foreground">
+                ছবি, কোটেশন, ইনফোগ্রাফিক—সব মোড এই প্যানেলের জেনারেটরে পাওয়া যাবে।
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {photocards.map((card) => (
+                  <article key={card.id} className="overflow-hidden rounded-md border border-border bg-background">
+                    <div className="aspect-square bg-muted">
+                      {card.image_url ? (
+                        <img src={card.image_url} alt={card.quote ?? "photocard"} className="h-full w-full object-cover" loading="lazy" />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-sm text-muted-foreground">ছবি নেই</div>
+                      )}
+                    </div>
+                    <div className="space-y-2 p-3">
+                      <p className="line-clamp-2 text-sm font-medium text-foreground">{card.quote || "কোটেশন নেই"}</p>
+                      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                        <span>{new Date(card.created_at).toLocaleString("bn-BD")}</span>
+                        {card.source_url && (
+                          <a href={card.source_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                            সোর্স
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+              {photocards.length === 0 && (
+                <p className="text-sm text-muted-foreground">এখনও কোনো ফটোকার্ড নেই। নতুন একটি জেনারেট করুন।</p>
+              )}
+              <PhotocardModal
+                open={photocardOpen}
+                onOpenChange={setPhotocardOpen}
+                onGenerated={loadAll}
+              />
             </section>
           </TabsContent>
         </Tabs>
