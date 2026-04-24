@@ -48,6 +48,7 @@ interface Props {
   defaultText?: string;
   defaultCategory?: string;
   categoryId?: string | null;
+  onGenerated?: () => void | Promise<void>;
 }
 
 type CardStyle = "minimal" | "bold" | "classic" | "photo" | "quote-mark" | "infographic";
@@ -77,6 +78,7 @@ const PhotocardModal = ({
   defaultText,
   defaultCategory,
   categoryId,
+  onGenerated,
 }: Props) => {
   const isMobile = useIsMobile();
   const settings = useSiteSettings();
@@ -228,6 +230,7 @@ const PhotocardModal = ({
         detail: data.detail,
         bullets: data.bullets,
       });
+      await onGenerated?.();
       toast.success("ফটোকার্ড তৈরি হয়েছে");
     } catch (e) {
       const msg = e instanceof Error ? e.message : "ত্রুটি";
