@@ -53,6 +53,10 @@ const VARIANTS = [
   { value: "top-strip", label: "টপ স্ট্রিপ (marquee)" },
   { value: "tabs", label: "ট্যাবস (multi-category)" },
   { value: "sponsored", label: "স্পনসর্ড / বিজ্ঞাপন" },
+  { value: "cinematic", label: "🎬 সিনেম্যাটিক (বিনোদন)" },
+  { value: "magazine-collage", label: "📰 ম্যাগাজিন কোলাজ" },
+  { value: "neon-glass", label: "✨ নিয়ন/গ্লাস" },
+  { value: "polaroid", label: "📸 পোলারয়েড স্ক্রল" },
 ];
 
 const BG_STYLES = [

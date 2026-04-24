@@ -54,7 +54,7 @@ const ThemeSwitcher = () => {
                 <button
                   key={t.key}
                   onClick={() => pick(t.key)}
-                  className={`w-full text-left px-3 py-2 rounded-md flex items-start gap-3 hover:bg-muted transition-colors ${
+                  className={`group relative w-full text-left px-3 py-2 rounded-md flex items-start gap-3 hover:bg-muted transition-colors ${
                     active === t.key ? "bg-muted ring-1 ring-primary/40" : ""
                   }`}
                 >
@@ -74,7 +74,6 @@ const ThemeSwitcher = () => {
                       <span className="text-xs text-muted-foreground">{t.english}</span>
                     </div>
                     <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{t.description}</p>
-                    {/* Linear strip for richer preview */}
                     <div className="mt-1.5 flex h-1.5 w-full overflow-hidden rounded-full border border-border">
                       {swatches.map((hsl, i) => (
                         <div key={i} className="flex-1" style={{ background: `hsl(${hsl})` }} />
@@ -82,6 +81,76 @@ const ThemeSwitcher = () => {
                     </div>
                   </div>
                   {active === t.key && <Check className="h-4 w-4 text-primary shrink-0 mt-1" />}
+
+                  {/* Hover live mini-mockup */}
+                  <div
+                    className="pointer-events-none absolute right-full top-0 mr-2 w-56 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 z-10 rounded-lg shadow-2xl border overflow-hidden"
+                    style={{
+                      background: `hsl(${t.tokens["--background"] ?? "0 0% 100%"})`,
+                      color: `hsl(${t.tokens["--foreground"] ?? "220 15% 12%"})`,
+                      borderColor: `hsl(${t.tokens["--border"] ?? "220 13% 90%"})`,
+                      fontFamily: t.fonts?.body ?? "inherit",
+                    }}
+                    aria-hidden="true"
+                  >
+                    {/* Header bar */}
+                    <div
+                      className="px-2.5 py-1.5 flex items-center justify-between text-[9px] font-bold"
+                      style={{
+                        background: `hsl(${t.tokens["--primary"] ?? "354 78% 46%"})`,
+                        color: "white",
+                      }}
+                    >
+                      <span style={{ fontFamily: t.fonts?.headline ?? "inherit" }}>পটুয়াখালী এক্সপ্রেস</span>
+                      <span className="opacity-70">≡</span>
+                    </div>
+                    {/* Hero card */}
+                    <div className="p-2 space-y-1.5">
+                      <div
+                        className="aspect-[16/9] rounded"
+                        style={{ background: `linear-gradient(135deg, hsl(${t.tokens["--accent"] ?? "38 92% 50%"}), hsl(${t.tokens["--primary"] ?? "354 78% 46%"}))` }}
+                      />
+                      <div
+                        className="text-[10px] font-bold leading-tight line-clamp-2"
+                        style={{
+                          color: `hsl(${t.tokens["--headline"] ?? "220 25% 8%"})`,
+                          fontFamily: t.fonts?.headline ?? "inherit",
+                          fontWeight: 700,
+                        }}
+                      >
+                        জাতীয় সংসদে নতুন বিল পাশ
+                      </div>
+                      <div className="flex gap-1.5">
+                        <span
+                          className="text-[7px] px-1.5 py-0.5 rounded"
+                          style={{ background: `hsl(${t.tokens["--primary"] ?? "354 78% 46%"})`, color: "white" }}
+                        >
+                          রাজনীতি
+                        </span>
+                        <span className="text-[7px] opacity-60">৩ ঘণ্টা আগে</span>
+                      </div>
+                      {/* Two mini cards */}
+                      <div className="grid grid-cols-2 gap-1 pt-1">
+                        {[0, 1].map((k) => (
+                          <div
+                            key={k}
+                            className="rounded p-1 border"
+                            style={{
+                              borderColor: `hsl(${t.tokens["--border"] ?? "220 13% 90%"})`,
+                              background: `hsl(${t.tokens["--card"] ?? "0 0% 100%"})`,
+                            }}
+                          >
+                            <div
+                              className="aspect-square rounded mb-1"
+                              style={{ background: `hsl(${t.tokens["--muted"] ?? "210 20% 96%"})` }}
+                            />
+                            <div className="h-1 w-3/4 rounded" style={{ background: `hsl(${t.tokens["--headline"] ?? "220 25% 8%"} / 0.8)` }} />
+                            <div className="h-1 w-1/2 rounded mt-0.5" style={{ background: `hsl(${t.tokens["--muted-foreground"] ?? "220 10% 42%"} / 0.5)` }} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </button>
               );
             })}
