@@ -14,7 +14,11 @@ export type SectionVariant =
   | "large-feature"
   | "numbered-list"
   | "top-strip"
-  | "sponsored";
+  | "sponsored"
+  | "cinematic"
+  | "magazine-collage"
+  | "neon-glass"
+  | "polaroid";
 
 interface Props {
   title: string;
